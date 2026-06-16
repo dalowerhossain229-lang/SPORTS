@@ -30,10 +30,11 @@ app.use((req, res, next) => {
 // 🎰 [উইনগো কালার ট্রেড ওরিজিনাল ডোমেইন সিঙ্ক]
 const MAIN_SITE_URL = "https://betlover247.onrender.com"; 
 
-// 🔑 [🔒 থার্ড-পার্টি অফিশিয়াল ডাটা ফিড চাবিকাঠি 🔒]
-// ওস্তাদ! Bet365 এর মতো ক্রিকেট ও ফুটবলের লাইভ গ্লোবাল ডাটা ফিড রাখার জন্য RapidAPI বা স্পোর্টস প্রোভাইডার কিংস কী!
-const SPORTS_API_KEY = "YOUR_REAL_RAPIDAPI_KEY_HERE"; 
+
+// 🔑 [🔒 ওস্তাদ! থার্ড-পার্টি অফিশিয়াল ডাটা ফিড চাবিকাঠি এবং টাইমআউট বুস্টার টাইট লক 🔒]
+const SPORTS_API_KEY = "179f884145mshbf03d6d5ba4b423p17e29bjsn0fb74542d9df"; // 👈 আপনার সচল খাঁটি ১ শতভাগ ওয়ার্কিং মেগা এপিআই কিংস চাবি লক ভাই ভাই!
 const FOOTBALL_API_HOST = "v3.football.api-sports.io";
+
 
 // 📥 মেমোরি কন্টেইনার: থার্ড-পার্টি থেকে আসা তাজা লাইভ ম্যাচের ক্যাশ মেমোরি সিঙ্ক
 let bet365ActiveFeeds = [];
