@@ -1,0 +1,24 @@
+{
+  "name": "bet365-live-sportsbook-engine",
+  "version": "1.0.0",
+  "description": "VIP Premium Live Sports Feed Engine with Balance Cutting Sync",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "bet365",
+    "sportsbook",
+    "live-scores",
+    "casino-api"
+  ],
+  "author": "VIP CASINO DEVELOPER",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
