@@ -1,0 +1,300 @@
+/* ===================================================================================
+   🎰 BET365 LIVE SPORTSBOOK - PREMIUM CASINO LAYOUT STYLESHEET (RAINBOW SYNC)
+   =================================================================================== */
+
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    user-select: none; 
+    -webkit-user-select: none; 
+}
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background: #0b1114; /* Bet365 সিগনেচার ডার্ক চারকোল ক্যাসিনো বডি ব্যাকগ্রাউন্ড ভাই ভাই */
+    margin: 0; 
+    padding: 4px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 🏟️ স্পোর্টসবুক প্রিমিয়াম এরিনা ক্যানভাস */
+.bet365-stadium { 
+    width: 100%; 
+    max-width: 480px; /* মোবাইল রেসপন্সিভ ভিউ এর জন্য কাঁটায় কাঁটায় মেপে লাক্সারি সাইজ */
+    background: #0f171a; 
+    border: 1px solid #1c2b30; 
+    border-radius: 12px; 
+    padding: 10px; 
+    box-sizing: border-box; 
+    display: flex;
+    flex-direction: column;
+    min-height: 96vh;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    position: relative;
+    overflow-y: auto;
+}
+
+/* 👑 ওপরের অফিশিয়াল ডিসপ্লে বার */
+.bet365-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #121e22; /* Bet365 জেনুইন অফিশিয়াল ডার্ক গ্রিনিল গ্রে নোড */
+    border: 1px solid #1c2b30;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.bet365-back-btn {
+    background: #ffdf00; /* কিংস লাক্সারি গোল্ডেন ব্যাক বোতাম */
+    color: #0b1114;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 2px #b39c00;
+}
+.bet365-back-btn:active { transform: translateY(1px); box-shadow: none; }
+
+.bet365-brand-logo {
+    font-size: 14px;
+    font-weight: 950;
+    color: #00ffaa; /* Bet365 আইকনিক লাক্সারি গ্রিন ব্র্যান্ড লোগো ভাই ভাই */
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* 🎯 [🔒 ওস্তাদ! আপনার রেনবো গেমের ওরিজিনাল নিয়নের অবিকল মেইন ব্যালেন্স গ্লোয়িং থিমে কড়া লক 🔒] */
+.bet365-balance-box, #user-balance {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 13px !important;
+    font-weight: 950 !important;
+    color: #00ff66 !important; /* 👈 ওস্তাদ! রেনবো গেমের অবিকল পিউর নিয়ন গ্রিন ওয়ালেট ডিসপ্লে লক! */
+    font-family: monospace !important;
+    text-shadow: 0 0 10px rgba(0, 255, 102, 0.5) !important;
+}
+
+/* 🔴 In-Play Live Betting Arena ব্যানার */
+.bet365-live-banner {
+    background: #18272c;
+    border-left: 4px solid #ffdf00;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.live-blink-dot {
+    animation: bet365Blink 1s ease-in-out infinite alternate;
+}
+@keyframes bet365Blink { from { opacity: 0.3; } to { opacity: 1; } }
+
+/* 🎰 [উইন্ডো গ্রিড লেআউট]: থার্ড-পার্টি ডাটা ফিড ম্যাচ কার্ড গ্রিড */
+.bet365-grid-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+/* 🏟️ Bet365 স্টাইলে লাক্সারি ডার্ক নিয়ন রো গ্রিড ডিজাইন লেআউট কার্ড */
+.bet365-match-card {
+    background: #131f24 !important;
+    border: 1px solid #1c2b30 !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    transition: background 0.2s;
+}
+.bet365-match-card:hover { background: #17262c !important; }
+
+.teams-zone {
+    flex: 1.6 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.league-tag {
+    font-size: 11px !important;
+    color: #00ffaa !important; /* লীগ নামের জন্য লাক্সারি নিয়ন গ্রিন টেক্সচার */
+    font-weight: bold !important;
+    letter-spacing: 0.3px;
+}
+
+.time-blink {
+    color: #ffdf00 !important; /* লাইভ টাইমিং এর জন্য গোল্ডেন লাইভ কাউন্টার */
+    font-weight: 900;
+}
+
+.team-row {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    display: flex;
+    justify-content: space-between;
+    padding-right: 15px;
+}
+
+.score-num {
+    color: #ffdf00 !important; /* গোল কাউন্টারের জন্য ৩D গোল্ডেন ওডস টেক্সচার */
+    font-weight: 950 !important;
+    font-family: monospace;
+}
+
+/* 🎛️ Bet365 সিগনেচার ১X২ অডস বাটন গ্রিড */
+.odds-zone {
+    display: flex !important;
+    gap: 6px !important;
+    flex: 1 !important;
+    justify-content: flex-end !important;
+}
+
+.odds-bet-btn {
+    background: #19282f !important;
+    border: 1px solid #283e49 !important;
+    color: #ffdf00 !important; /* বাটন টাইটেল ১, X, ২ গোল্ডেন নিয়ন ভাই ভাই */
+    padding: 10px 0 !important;
+    border-radius: 6px !important;
+    font-weight: 950 !important;
+    font-size: 13px !important;
+    min-width: 55px !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transition: all 0.1s;
+}
+.odds-bet-btn:hover { background: #223740 !important; border-color: #ffdf00 !important; }
+.odds-bet-btn:active { transform: scale(0.95); }
+
+.odds-bet-btn span {
+    color: #ffffff !important; /* অডস ভ্যালুর জন্য পিউর ধবধবে সাদা ফন্ট */
+    font-size: 11px !important;
+    font-weight: bold !important;
+    display: block;
+    margin-top: 2px;
+}
+
+/* 🔳 [🔒 গোল্ডেন বেট স্লিপ কনফার্মেশন মডাল পপআপ ওভারলে সিএসএস 🔒] */
+.bet365-popup-overlay {
+    display: none; /* ডিফল্ট হিডেন থাকবে ভাই */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.bet365-popup-box {
+    background: radial-gradient(circle, #17272d 0%, #0d161a 100%);
+    border: 2px solid #ffdf00; /* বেট স্লিপের গোল্ডেন কড়া বর্ডার লক */
+    border-radius: 14px;
+    padding: 20px;
+    width: 100%;
+    max-width: 320px;
+    box-shadow: 0 0 30px rgba(255, 223, 0, 0.25), inset 0 0 15px #000;
+    animation: bet365PopScale 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+}
+@keyframes bet365PopScale { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.bet365-popup-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #23373e;
+    padding-bottom: 8px;
+}
+
+.slip-details-row {
+    font-size: 12px;
+    color: #aaa;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.slip-input-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+/* বেট স্লিপ ইনপুট বক্স প্রফেশনাল ডিজাইন ভাই ভাই */
+.slip-input-container input {
+    width: 80%;
+    padding: 10px;
+    background: #090e10;
+    border: 1px solid #23373e;
+    border-radius: 6px;
+    color: #00ff66; /* টাইপ করা টাকার ফন্ট নিয়ন গ্রিন স্পষ্ট জলজল করবে ভাই ভাই */
+    font-size: 16px;
+    font-weight: 950;
+    text-align: center;
+    font-family: monospace;
+    outline: none;
+}
+.slip-input-container input:focus { border-color: #00ff66; box-shadow: 0 0 8px rgba(0,255,102,0.3); }
+
+.slip-btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.slip-cancel-btn {
+    flex: 1;
+    padding: 12px;
+    background: #1c2b30;
+    color: #aaa;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+}
+.slip-cancel-btn:hover { background: #283e45; color: #fff; }
+
+.slip-confirm-btn {
+    flex: 1.5;
+    padding: 12px;
+    background: linear-gradient(180deg, #00ffaa 0%, #009966 100%); /* Bet365 অরিজিনাল গ্রিন প্লেস বোতাম */
+    color: #0b1114;
+    border: none;
+    border-radius: 6px;
+    font-weight: 950;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 3px #004d33;
+}
+.slip-confirm-btn:hover { background: linear-gradient(180deg, #00ffbc 0%, #00b377 100%); }
+.slip-confirm-btn:active { transform: translateY(2px); box-shadow: none; }
+
+/* বাজি প্লেসিং লক স্টেট বর্ম */
+.spinning-lock {
+    opacity: 0.6 !important;
+    background: #333333 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
