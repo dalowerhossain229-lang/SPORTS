@@ -139,9 +139,13 @@ function generateBet365MultiSportsOrganicFeeds() {
     io.emit("bet365LiveOddsUpdate", bet365ActiveFeeds);
 }
 
-// প্রতি ১৫ সেকেন্ডে ব্যাকগ্রাউন্ডে আনলিমিটেড ডাইনামিক মাল্টি-স্পোর্টস লাইভ অডস রিলোড সচল ভাই!
-setInterval(generateBet365MultiSportsOrganicFeeds, 15000);
-setTimeout(generateBet365MultiSportsOrganicFeeds, 1000);
+// ওস্তাদ! প্রতি ১৫ সেকেন্ডে ব্যাকগ্রাউন্ডে আনলিমিটেড ডাইনামিক লাইভ অডস রিলোড হবেই ভাই ভাই!
+setInterval(generateBet365DynamicOrganicFeeds, 15000);
+
+// 🚀 [🔒 মেগা কিলার ফিক্স—সার্ভার বুট হওয়ার ১ মিলি-সেকেন্ডের মাথায় ওয়ান-শটে কোনো ডিলে ছাড়া সাথে সাথে ডাটা ফিড চালু করার কিংস চাবি লক 🔒]
+setTimeout(() => {
+    generateBet365DynamicOrganicFeeds();
+}, 100);
 
 // 💰 ১. লাইভ অ্যাকাউন্ট ব্যালেন্স নিয়ে আসার ডেডিকেটেড গেটওয়ে (রেনবো গেমের অবিকল ট্রিক ভাই ভাই!)
 app.get('/api/rainbow-balance', async (req, res) => {
