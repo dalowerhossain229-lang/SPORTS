@@ -28,7 +28,7 @@ app.use((req, res, next) => {
 });
 
 // 🎰 [উইনগো কালার ট্রেড ওরিজিনাল ডোমেইন সিঙ্ক]
-const MAIN_SITE_URL = "https://onrender.com"; 
+const MAIN_SITE_URL = "https://betlover247.onrender.com"; 
 
 // 🔑 [🔒 থার্ড-পার্টি অফিশিয়াল ডাটা ফিড চাবিকাঠি 🔒]
 // ওস্তাদ! Bet365 এর মতো ক্রিকেট ও ফুটবলের লাইভ গ্লোবাল ডাটা ফিড রাখার জন্য RapidAPI বা স্পোর্টস প্রোভাইডার কিংস কী!
