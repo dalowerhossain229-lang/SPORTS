@@ -382,18 +382,18 @@
         `;
     }
 
-    html += `
-        <div class="bet365-luxury-match-card" onclick="toggleMatchExpansionCard('${m.matchId}')">
-            <div class="luxury-card-meta-row">
-                <span class="meta-league-name">🌍 ${m.country} - 🏆 ${m.league} ${m.matchFormat ? `[${String(m.matchFormat).toUpperCase()}]` : ''}</span>
-                <span class="meta-match-timer">⏰ ${m.matchTime} ${isExpanded ? '<b style="color:#00ffaa; margin-left:5px;">▲ CLOSE</b>' : '<b style="color:#ffdf00; margin-left:5px;">▼ EXPAND</b>'}</span>
+            html += `
+            <div class="bet365-luxury-match-card" onclick="toggleMatchExpansionCard('${m.matchId}')">
+                <div class="luxury-card-meta-row">
+                    <span class="meta-league-name">🌍 ${m.country} - 🏆 ${m.league} ${m.matchFormat ? `[${String(m.matchFormat).toUpperCase()}]` : ''}</span>
+                    <span class="meta-match-timer">⏰ ${m.matchTime} ${isExpanded ? '<b style="color:#00ffaa; margin-left:5px;">▲ CLOSE</b>' : '<b style="color:#ffdf00; margin-left:5px;">▼ EXPAND</b>'}</span>
+                </div>
+                ${scoreDisplayHTML}
+                ${marketsHTML}
             </div>
-            ${scoreDisplayHTML}
-            ${marketsHTML}
-        </div>
-    `;
-});
-container.innerHTML = html;
+        `;
+    });
+    container.innerHTML = html;
 }
 
 // 🎛️ ওস্তাদ! কার্ডের ওপর ক্লিক করলেই পুরো ড্রপডাউন মার্কেট মাখনের মতো এক টানে অন-অফ হবে!
@@ -401,6 +401,7 @@ function toggleMatchExpansionCard(matchId) {
     expandedMatchesMap[matchId] = !expandedMatchesMap[matchId];
     renderBet365LuxuryOddsTable();
 }
+
 
 function openBet365SlipModal(matchId, matchTitle, marketName, selection, oddsValue) {
     if (isBetPlacing) return;
