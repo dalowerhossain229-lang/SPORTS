@@ -540,13 +540,22 @@ socket.on("balanceUpdate", (data) => {
     }
 });
 
-window.onload = () => {
-    if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+window.onload = async () => {
+    // ১. ওয়ালেট রিফ্রেশ মেসেজ পাঠানো
+    if (window.parent) {
+        window.parent.postMessage({ action: "refresh_wallet" }, "*");
+    }
+    
+    // ২. ব্যালেন্স ফেচ করা
     fetchLiveBalance();
     setTimeout(fetchLiveBalance, 400);
+    
+    // ৩. ওস্তাদ, এখানে আগে API থেকে ডেটা লোড করাবেন (মনে করি ফাংশনটির নাম fetchMatches)
+    // await fetchMatches(); 
+    
+    // ৪. ডেটা আসার পর টেবিল রেন্ডার হবে
     renderBet365LuxuryOddsTable();
 };
 </script>
 </body>
 </html>
-
