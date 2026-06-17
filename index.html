@@ -335,19 +335,21 @@
         `;
     }
 
-                html += `
-            <div class="bet365-luxury-match-card" onclick="toggleMatchExpansionCard('${m.matchId}')">
-                <div class="luxury-card-meta-row">
-                    <span class="meta-league-name">🌍 ${m.country} - 🏆 ${m.league} ${m.matchFormat ? `[${String(m.matchFormat).toUpperCase()}]` : ''}</span>
-                    <span class="meta-match-timer">⏰ ${m.matchTime} ${isExpanded ? '<b style="color:#00ffaa; margin-left:5px;">▲ CLOSE</b>' : '<b style="color:#ffdf00; margin-left:5px;">▼ EXPAND</b>'}</span>
-                </div>
-                ${scoreDisplayHTML}
-                ${marketsHTML}
-            </div>
-        `;
-    });
-    container.innerHTML = html;
-}
+     // ১. লুপের ভেতর 'isExpanded' ভেরিয়েবলটি ডিফাইন করে ত্রুটি মুক্ত করা হলো
+const isExpanded = !!expandedMatchesMap[m.matchId];
+
+html += `
+    <div class="bet365-luxury-match-card" onclick="toggleMatchExpansionCard('${m.matchId}')">
+        <div class="luxury-card-meta-row">
+            <span class="meta-league-name">🌍 ${m.country} - 🏆 ${m.league} ${m.matchFormat ? `[${String(m.matchFormat).toUpperCase()}]` : ''}</span>
+            <span class="meta-match-timer">⏰ ${m.matchTime} ${isExpanded ? '<b style="color:#00ffaa; margin-left:5px;">▲ CLOSE</b>' : '<b style="color:#ffdf00; margin-left:5px;">▼ EXPAND</b>'}</span>
+        </div>
+        ${scoreDisplayHTML}
+        ${marketsHTML}
+    </div>
+`;
+// আপনার কোডে এখানে ১টি ভুল ক্লোজিং ব্র্যাকেট '}' ছিল, যা লুপ অনুযায়ী সমন্বয় করা প্রয়োজন।
+           
 
 // 🎛️ ওস্তাদ! কার্ডের ওপর ক্লিক করলেই পুরো ড্রপডাউন মার্কেট মাখনের মতো এক টানে অন-অফ হবে!
 function toggleMatchExpansionCard(matchId) {
