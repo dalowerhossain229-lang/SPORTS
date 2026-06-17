@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bet365 Premium Multi-Sportsbook - VIP CASINO</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bet365-stadium">
+    
+    <!-- 🏟️ [🔒 Bet365 অবিকল ৪-কলাম মাল্টি-স্পোর্টস ডাইনামিক হরাইজন্টাল নেভিগেশন মেনুবার 🔒] -->
+    <div class="bet365-sports-nav-scroll">
+        <button class="sports-nav-tab active" id="tab-live" onclick="switchSportsCategory('live')">🔴 LIVE SPORTS</button>
+        <button class="sports-nav-tab" id="tab-cricket" onclick="switchSportsCategory('cricket')">🏏 CRICKET</button>
+        <button class="sports-nav-tab" id="tab-football" onclick="switchSportsCategory('football')">⚽ FOOTBALL</button>
+        <button class="sports-nav-tab" id="tab-tennis" onclick="switchSportsCategory('tennis')">🎾 TENNIS</button>
+    </div>
+
+    <!-- 📥 [🔒 ওস্তাদ! খাতার পৃষ্ঠা ১ অনুসারী LIVE SPORTS এর ভেতরের ৩টি সাব-অপশন প্যানেল বর্ম 🔒] -->
+    <div id="live-sports-sub-bar" class="cricket-formats-sub-nav" style="display: flex;">
+        <button class="cricket-format-btn active" id="live-sub-all" onclick="filterLiveSportsSub('all')">ALL LIVE</button>
+        <button class="cricket-format-btn" id="live-sub-cricket" onclick="filterLiveSportsSub('cricket')">CRICKET LIVE</button>
+        <button class="cricket-format-btn" id="live-sub-football" onclick="filterLiveSportsSub('football')">FOOTBALL LIVE</button>
+        <button class="cricket-format-btn" id="live-sub-tennis" onclick="filterLiveSportsSub('tennis')">TENNIS LIVE</button>
+    </div>
+
+    <!-- 🎰 [🔒 থার্ড-পার্টি ডাটা ফিড থেকে আসা তাজা ম্যাচের ১X২ ডিসপ্লে গ্রিড কন্টেইনার কড়া锁 🔒] -->
+    <div id="bet365-sports-grid" class="bet365-grid-wrapper">
+        <div style="text-align: center; padding: 40px; color: #888; font-family: sans-serif; font-weight: bold;">
+            ⏳ স্পোর্টস লাইভ ডাটা ফিড কানেক্ট হচ্ছে...
+        </div>
+    </div>
+
+    <!-- 🔳 [🔒 বাজি ধরার পর গোল্ডেন বেট স্লিপ কনফার্মেশন মডাল পপআপ 🔒] -->
+    <div id="bet365-slip-overlay" class="bet365-popup-overlay">
+        <div class="bet365-popup-box">
+            <div class="bet365-popup-title" id="slip-match-title">Real Madrid vs Barcelona</div>
+            <div class="slip-market-badge" id="slip-market-name">Match Winner</div>
+            <div class="slip-details-row">
+                Selection: <span id="slip-selection" style="color: #ffdf00; font-weight: 950;">Home</span> 
+                | Odds: <span id="slip-odds" style="color: #00ff66; font-weight: 950;">1.85</span>
+            </div>
+            <div class="slip-input-container">
+                <input type="number" id="slip-bet-amount" value="100" min="10" placeholder="BDT Stake">
+            </div>
+            <div class="slip-btn-group">
+                <button class="slip-cancel-btn" onclick="closeBet365SlipModal(event)">CANCEL</button>
+                <button class="slip-confirm-btn" id="slip-submit-btn" onclick="confirmBet365Placement()">PLACE BET</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📜 [🔒 আলাদা ডেডিকেটেড স্পোর্টস বেট হিস্টোরি স্লাইডিং প্যানেল 🔒] -->
+    <div id="sports-history-sidebar" class="sports-history-panel-overlay">
+        <div class="sports-history-content-box">
+            <div class="history-panel-header">
+                <h3>📋 SPORTS BET HISTORY</h3>
+                <button class="history-close-x-btn" onclick="toggleSportsHistoryPanel(event, false)">✕</button>
+            </div>
+            <div id="sports-history-log-list" class="history-log-scroll-area">
+                <div style="text-align: center; padding: 20px; color: #aaa;">⏳ বাজি লগ লোড হচ্ছে...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔲 [🔒 ওস্তাদ! নিচে সাদা মার্ক করা জায়গায় ডেডিকেটেড ফিক্সড Betslip বাটন বর্ম লক 🔒] -->
+    <div class="bet365-footer-betslip-bar" onclick="toggleSportsHistoryPanel(event, true)">
+        <div class="betslip-btn-content">
+            <span class="betslip-icon">📋</span>
+            <span class="betslip-text">BET SLIP / LIVE CASHOUT</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- 📢 Sockets নেটওয়ার্ক ও ইউনিভার্সাল ওতো-ড্রাইভার স্ক্রিপ্ট লজিক -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUserId = urlParams.get('userId') || urlParams.get('id') || urlParams.get('username') || "guest_user";
+    const urlWallet = urlParams.get('wallet') || "main";
+    
+    const SERVER_URL = window.location.origin;
+
+    let balance = 0.00;
+    let isBetPlacing = false;
+    let activeSlipData = null;
+    let currentActiveCategory = 'live'; 
+    let currentLiveSportsSub = 'all'; 
+    let cachedGlobalMatches = [];
+    let expandedMatchesMap = {}; // এক্সপ্যান্ডেবল স্টেট ডিক্লেয়ারেশন লক ভাই!
+
+    const socket = io({
+        transports: ['websocket', 'polling'],
+        upgrade: true
+    });
+
+    async function fetchLiveBalance() {
+        try {
+            const response = await fetch(`${SERVER_URL}/api/rainbow-balance?userId=${urlUserId}&wallet=${urlWallet}`);
+            const data = await response.json();
+            if (data && data.success) {
+                balance = parseFloat(data.balance);
+            }
+        } catch (e) { console.error("Balance fetch locked handled"); }
+    }
+
+    socket.on("bet365LiveOddsUpdate", (matches) => {
+        cachedGlobalMatches = matches;
+        renderBet365LuxuryOddsTable(cachedGlobalMatches);
+    });
+
+    function switchSportsCategory(categoryName) {
+        currentActiveCategory = categoryName;
+        document.querySelectorAll('.sports-nav-tab').forEach(btn => btn.classList.remove('active'));
+        
+        const targetTab = document.getElementById(`tab-${categoryName}`);
+        if (targetTab) targetTab.classList.add('active');
+        
+        const subBar = document.getElementById("live-sports-sub-bar");
+        if (subBar) {
+            subBar.style.display = (categoryName === 'live') ? "flex" : "none";
+        }
+        
+        currentLiveSportsSub = 'all'; 
+        document.querySelectorAll('.cricket-format-btn').forEach(btn => btn.classList.remove('active'));
+        const defaultSub = document.getElementById("live-sub-all");
+        if (defaultSub) defaultSub.classList.add('active');
+
+        renderBet365LuxuryOddsTable(cachedGlobalMatches);
+    }
+
+    function filterLiveSportsSub(subName) {
+        currentLiveSportsSub = subName;
+        document.querySelectorAll('.cricket-format-btn').forEach(btn => btn.classList.remove('active'));
+        
+        const targetSubTab = document.getElementById(`live-sub-${subName}`);
+        if (targetSubTab) targetSubTab.classList.add('active');
+        
+        renderBet365LuxuryOddsTable(cachedGlobalMatches);
+    }
+
+    // 🎰 [🔒 ওস্তাদ! খাতার ৪টি পাতার অবিকল ৩-গেম এক্সপ্যান্ডেবল মার্কেট রেন্ডারিং মাস্টার ইঞ্জিন লক 🔒]
+    function renderBet365LuxuryOddsTable(matches) {
+        const container = document.getElementById("bet365-sports-grid");
+        if (!container) return;
+
+        let filteredMatches = matches || [];
+        
+        if (currentActiveCategory !== 'live') {
+            filteredMatches = filteredMatches.filter(m => m.sport === currentActiveCategory);
+        } else if (currentLiveSportsSub !== 'all') {
+            filteredMatches = filteredMatches.filter(m => m.sport === currentLiveSportsSub);
+        }
+
+        if (!filteredMatches || filteredMatches.length === 0) {
+            container.innerHTML = `<div style="text-align: center; padding: 40px; color: #888; font-family: sans-serif; font-weight: bold;">🏁 এই মুহূর্তে কোনো সচল ${currentActiveCategory.toUpperCase()} ম্যাচ নেই ওস্তাদ!</div>`;
+            return;
+        }
+
+        let html = "";
+        filteredMatches.forEach(m => {
+            const isExpanded = !!expandedMatchesMap[m.matchId];
+            let marketsHTML = "";
+            let scoreDisplayHTML = "";
+
+                    if (m.sport === 'tennis') {
+            try {
+                let sH = (typeof m.scoreHome === 'string') ? JSON.parse(m.scoreHome) : (m.scoreHome || { set: 0, game: 0, point: "0" });
+                let sA = (typeof m.scoreAway === 'string') ? JSON.parse(m.scoreAway) : (m.scoreAway || { set: 0, game: 0, point: "0" });
+                
+                scoreDisplayHTML = `
+                    <div class="luxury-teams-score-grid">
+                        <div class="luxury-team-name">${m.teamHome}</div>
+                        <div style="display:flex; gap:3px;">
+                            <div class="luxury-score-badge" style="color:#8fa39b; font-size:12px;">${sH.set ?? 0}</div>
+                            <div class="luxury-score-badge" style="color:#aaa; font-size:12px;">${sH.game ?? 0}</div>
+                            <div class="luxury-score-badge">${sH.point ?? 0}</div>
+                        </div>
+                        <div class="luxury-team-name">${m.teamAway}</div>
+                        <div style="display:flex; gap:3px;">
+                            <div class="luxury-score-badge" style="color:#8fa39b; font-size:12px;">${sA.set ?? 0}</div>
+                            <div class="luxury-score-badge" style="color:#aaa; font-size:12px;">${sA.game ?? 0}</div>
+                            <div class="luxury-score-badge">${sA.point ?? 0}</div>
+                        </div>
+                    </div>
+                `; // 👈 এই ব্যাকটিক দিয়ে ১৯০ লাইনের ঝামেলা শেষ হলো
+            
+            } catch (err) {
+                scoreDisplayHTML = `
+                    <div class="luxury-teams-score-grid">
+                        <div class="luxury-team-name">${m.teamHome}</div>
+                        <div class="luxury-score-badge">${m.scoreHome || 0}</div>
+                        <div class="luxury-team-name">${m.teamAway}</div>
+                        <div class="luxury-score-badge">${m.scoreAway || 0}</div>
+                    </div>
+                `;
+            }
+        } else {
+            // ফুটবল ও ক্রিকেটের জন্য স্ট্যান্ডার্ড স্কোর ডিসপ্লে
+            scoreDisplayHTML = `
+                <div class="luxury-teams-score-grid" style="color:#fff; padding:6px 0;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span class="luxury-team-name">${m.teamHome}</span>
+                        <b class="luxury-score-badge" style="color:#ffdf00;">${m.scoreHome ?? 0}</b>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:2px;">
+                        <span class="luxury-team-name">${m.teamAway}</span>
+                        <b class="luxury-score-badge" style="color:#ffdf00;">${m.scoreAway ?? 0}</b>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ------------------ খ) স্পোর্টস ভিত্তিক মার্কেট রেন্ডারিং ইঞ্জিন ------------------
+        if (m.sport === 'football') {
+            let innerFootball = "";
+            if (isExpanded) {
+                innerFootball = `
+                    <div class="market-section-block" style="margin-top:6px;">
+                        <div class="market-header-title" style="color:#8fa39b; font-size:11px; font-weight:bold; padding:4px 0;">Full Time Result (1X2)</div>
+                        <div class="odds-row-buttons" style="display:flex; gap:4px;">
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Full Time Result', 'Home (1)', ${m.odds.fullTimeResult.home})">1<br><span>${m.odds.fullTimeResult.home}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Full Time Result', 'Draw (X)', ${m.odds.fullTimeResult.draw})">X<br><span>${m.odds.fullTimeResult.draw}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Full Time Result', 'Away (2)', ${m.odds.fullTimeResult.away})">2<br><span>${m.odds.fullTimeResult.away}</span></button>
+                        </div>
+                        <div class="market-header-title" style="color:#8fa39b; font-size:11px; font-weight:bold; margin-top:8px;">Double Chance</div>
+                        <div class="odds-row-buttons" style="display:flex; gap:4px;">
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Double Chance', 'Home or Draw', ${m.odds.doubleChance.homeDraw})">1X (Home/Draw)<br><span>${m.odds.doubleChance.homeDraw}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Double Chance', 'Away or Draw', ${m.odds.doubleChance.awayDraw})">X2 (Away/Draw)<br><span>${m.odds.doubleChance.awayDraw}</span></button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            marketsHTML = `
+                <div class="market-section-block">
+                    ${innerFootball}
+                </div>
+            `;
+
+        } else if (m.sport === 'cricket') {
+            let innerCricket = "";
+            if (isExpanded) {
+                if (m.matchFormat === 't20' || m.matchFormat === 't10') {
+                    innerCricket = `
+                        <div class="market-section-block" style="margin-top:6px;">
+                            <div class="market-header-title" style="color:#8fa39b; font-size:11px;">T20 Powerplay Runs</div>
+                            <div class="odds-row-buttons" style="display:flex; gap:4px;">
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Powerplay Runs', 'Over 48.5', ${m.odds.t20PowerplayRuns.line48_5.over})">Over 48.5<br><span>${m.odds.t20PowerplayRuns.line48_5.over}</span></button>
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Powerplay Runs', 'Under 48.5', ${m.odds.t20PowerplayRuns.line48_5.under})">Under 48.5<br><span>${m.odds.t20PowerplayRuns.line48_5.under}</span></button>
+                            </div>
+                        </div>
+                    `;
+                } else if (m.matchFormat === 'test') {
+                    innerCricket = `
+                        <div class="market-section-block" style="margin-top:6px;">
+                            <div class="market-header-title" style="color:#8fa39b; font-size:11px;">Match Winner 3-Way</div>
+                            <div class="odds-row-buttons" style="display:flex; gap:4px;">
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Team 1', ${m.odds.matchWinner3Way.home})">1<br><span>${m.odds.matchWinner3Way.home}</span></button>
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Draw', ${m.odds.matchWinner3Way.draw})">X<br><span>${m.odds.matchWinner3Way.draw}</span></button>
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Team 2', ${m.odds.matchWinner3Way.away})">2<br><span>${m.odds.matchWinner3Way.away}</span></button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            marketsHTML = `
+                <div class="market-section-block">
+                    <div class="odds-row-buttons" style="display:flex; gap:4px;">
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 2-Way', 'Team 1', ${m.odds.matchWinner2Way ? m.odds.matchWinner2Way.home : 1.85})">Team 1<br><span>${m.odds.matchWinner2Way ? m.odds.matchWinner2Way.home : 1.85}</span></button>
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 2-Way', 'Team 2', ${m.odds.matchWinner2Way ? m.odds.matchWinner2Way.away : 1.85})">Team 2<br><span>${m.odds.matchWinner2Way ? m.odds.matchWinner2Way.away : 1.85}</span></button>
+                    </div>
+                    ${isExpanded ? innerCricket : ''}
+                </div>
+            `;
+
+        } else if (m.sport === 'tennis') {
+            let innerTennis = "";
+            if (isExpanded) {
+                innerTennis = `
+                    <div class="market-section-block" style="margin-top:6px;">
+                        <div class="market-header-title" style="color:#8fa39b; font-size:11px;">To Win Set</div>
+                        <div class="odds-row-buttons" style="display:flex; gap:4px;">
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Set', 'Player 1', ${m.odds.toWinSet.home})">Set P1<br><span>${m.odds.toWinSet.home}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Set', 'Player 2', ${m.odds.toWinSet.away})">Set P2<br><span>${m.odds.toWinSet.away}</span></button>
+                        </div>
+                    </div>
+                `;
+            }
+
+                    marketsHTML = `
+            <div class="market-section-block">
+                <div class="market-header-title" style="color:#8fa39b; font-size:11px; font-weight:bold; padding:2px 0;">Quick In-Play Markets</div>
+                <div class="odds-row-buttons" style="display:flex; gap:4px;">
+                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Winner', 'Player 1', ${m.odds.matchWinner2Way.home})">Winner 1<br><span>${m.odds.matchWinner2Way.home}</span></button>
+                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Current Set', 'Player 1', ${m.odds.currentSetWinner.home})">Set 1<br><span>${m.odds.currentSetWinner.home}</span></button>
+                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Game', 'Player 1', ${m.odds.nextGameWinner.home})">Game 1<br><span>${m.odds.nextGameWinner.home}</span></button>
+                </div>
+                <div class="odds-row-buttons" style="display:flex; gap:4px; margin-top:4px;">
+                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Winner', 'Player 2', ${m.odds.matchWinner2Way.away})">Winner 2<br><span>${m.odds.matchWinner2Way.away}</span></button>
+                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Current Set', 'Player 2', ${m.odds.currentSetWinner.away})">Set 2<br><span>${m.odds.currentSetWinner.away}</span></button>
+                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Game', 'Player 2', ${m.odds.nextGameWinner.away})">Game 2<br><span>${m.odds.nextGameWinner.away}</span></button>
+                </div>
+                ${isExpanded ? innerTennis : ''}
+            </div>
+        `;
+    }
+
+    // ------------------ গ) মেগা ডাইনামিক ম্যাচ কার্ড এইচটিএমএল জেনারেশন ------------------
+    html += `
+        <div class="bet365-luxury-match-card" onclick="toggleMatchExpansionCard('${m.matchId}')" style="cursor:pointer; background:#0f1722; padding:12px; margin-bottom:8px; border-radius:4px; border-bottom:1px solid #1a2431;">
+            <div class="luxury-card-meta-row" style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#aaa; margin-bottom:4px;">
+                <span class="meta-league-name">🌍 ${m.country || 'International'} - 🏆 ${m.league || 'League'} ${m.matchFormat ? `[${String(m.matchFormat).toUpperCase()}]` : ''}</span>
+                <span class="meta-match-timer" style="font-weight:bold;">⏰ ${m.matchTime || 'LIVE'} ${isExpanded ? '<b style="color:#00ffaa; margin-left:5px;">▲ CLOSE</b>' : '<b style="color:#ffdf00; margin-left:5px;">▼ EXPAND</b>'}</span>
+            </div>
+            ${scoreDisplayHTML}
+            ${marketsHTML}
+        </div>
+    `;
+}); // filteredMatches.forEach লুপের নিখুঁত সমাপ্তি
+
+container.innerHTML = html;
+} // renderBet365LuxuryOddsTable মেইন ফাংশনের নিখুঁত সমাপ্তi
+
+// 🎛️ ওস্তাদ! কার্ডের ওপর ক্লিক করলেই পুরো ড্রপডাউন মার্কেট মাখনের মতো এক টানে অন-অফ হবে!
+function toggleMatchExpansionCard(matchId) {
+    if (!window.expandedMatchesMap) window.expandedMatchesMap = {};
+    expandedMatchesMap[matchId] = !expandedMatchesMap[matchId];
+    renderBet365LuxuryOddsTable(cachedGlobalMatches);
+}
+
+// ==================== গোল্ডেন বেট স্লিপ কন্ট্রোলার মেকানিজম ====================
+function openBet365SlipModal(event, matchId, matchTitle, marketName, selection, oddsValue) {
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    } else if (window.event) {
+        window.event.stopPropagation();
+    }
+
+    if (isBetPlacing) return;
+
+    activeSlipData = { matchId, matchTitle, marketName, selection, odds: parseFloat(oddsValue) };
+    
+    document.getElementById("slip-match-title").innerText = matchTitle;
+    document.getElementById("slip-market-name").innerText = marketName;
+    document.getElementById("slip-selection").innerText = selection;
+    
+    document.getElementById("slip-odds").innerText = parseFloat(oddsValue).toFixed(2); 
+    document.getElementById("bet365-slip-overlay").style.display = "flex";
+}
+
+function closeBet365SlipModal(event) {
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    } else if (window.event) {
+        window.event.stopPropagation();
+    }
+    document.getElementById("bet365-slip-overlay").style.display = "none";
+    activeSlipData = null;
+}
+
+async function confirmBet365Placement() {
+    if (isBetPlacing || !activeSlipData) return;
+    const stakeInput = document.getElementById("slip-bet-amount");
+    const betAmt = parseFloat(stakeInput.value);
+
+    if (isNaN(betAmt) || betAmt < 10 || betAmt > 20000) {
+        alert("❌ Invalid Stake Amount (৳১০ - ৳২০০০০)!");
+        return;
+    }
+
+    isBetPlacing = true;
+    const submitBtn = document.getElementById("slip-submit-btn");
+    submitBtn.disabled = true;
+    submitBtn.innerText = "PLACING... ⏳";
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/jili-bet`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: urlUserId, matchId: activeSlipData.matchId, marketName: activeSlipData.marketName,
+                selection: activeSlipData.selection, odds: activeSlipData.odds, amount: betAmt, wallet: urlWallet
+            })
+        });
+
+        const result = await response.json();
+        if (result.success === true) {
+            if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+            alert(result.message || "🎯 Bet accepted! Good Luck.");
+            closeBet365SlipModal();
+            if (typeof fetchSportsBetHistoryLog === 'function') fetchSportsBetHistoryLog(); 
+        } else {
+            alert(result.message || "❌ Bet Declined!");
+        }
+    } catch (err) {
+        alert("⚠️ সেশন আউট! আবার বাজি প্লে করুন ওস্তাদ ভাই ভাই।");
+    } finally {
+        isBetPlacing = false;
+        submitBtn.disabled = false;
+        submitBtn.innerText = "PLACE BET";
+    }
+}
+
+// ==================== স্পোর্টস বেট হিস্টোরি ও ক্যাশআউট মেকানিজম ====================
+function toggleSportsHistoryPanel(event, showPanel) {
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    } else if (window.event) {
+        window.event.stopPropagation();
+    }
+
+    const sidebar = document.getElementById("sports-history-sidebar");
+    if (sidebar) {
+        sidebar.style.display = showPanel ? "flex" : "none";
+        if (showPanel) fetchSportsBetHistoryLog();
+    }
+}
+
+async function fetchSportsBetHistoryLog() {
+    const historyListContainer = document.getElementById("sports-history-log-list");
+    if (!historyListContainer) return;
+    try {
+        const response = await fetch(`${SERVER_URL}/api/sportsbook/bet-history?userId=${urlUserId}`);
+        const data = await response.json();
+        if (data && data.success && data.history && data.history.length > 0) {
+            let logHTML = "";
+            data.history.reverse().forEach(log => {
+                let cashoutButtonHTML = "";
+                const stakeValue = parseFloat(log.stake || 0);
+                const oddsValue = parseFloat(log.odds || 0);
+                const payoutValue = parseFloat(log.potentialPayout || 0);
+
+                if (log.status === "RUNNING") {
+                    let currentCashoutOffer = stakeValue * 0.90; 
+                    cashoutButtonHTML = `<button class="live-cashout-action-btn" onclick="triggerLiveSportsCashout(event, '${log.ticketId}', ${currentCashoutOffer})" style="width:100%; background:#ffdf00; color:#000; border:none; padding:6px; font-weight:bold; cursor:pointer; margin-top:6px; border-radius:2px;">💰 CASH OUT: ৳${currentCashoutOffer.toFixed(2)}</button>`;
+                }
+
+                logHTML += `
+                    <div class="history-log-card-item" style="background:#131c26; padding:10px; margin-bottom:6px; border-radius:4px; color:#fff; border-left:4px solid #00ffaa;">
+                        <div class="log-match-title" style="font-weight:bold; font-size:13px;">🏟️ ${log.matchTitle || 'Match'}</div>
+                        <div class="log-market-sub" style="font-size:11px; color:#ccc; margin:2px 0;">${log.marketName || 'Market'} | Pick: <b style="color:#ffdf00;">${log.selection || 'N/A'}</b></div>
+                        <div class="log-data-row-flex" style="display:flex; justify-content:space-between; font-size:12px;">
+                            <span>Odds: <b>${oddsValue.toFixed(2)}</b></span>
+                            <span>Stake: <b style="color:#00ff66;">৳${stakeValue.toFixed(2)}</b></span>
+                        </div>
+                        <div class="log-payout-row" style="display:flex; justify-content:space-between; font-size:12px; margin-top:2px;">
+                            <span>Payout: <b>৳${payoutValue.toFixed(2)}</b></span>
+                            <span class="log-status-badge" style="background:#223140; padding:1px 5px; border-radius:2px; font-size:10px;">${log.status}</span>
+                        </div>
+                        ${cashoutButtonHTML}
+                    </div>
+                `;
+            });
+            historyListContainer.innerHTML = logHTML;
+        } else {
+            historyListContainer.innerHTML = `<div style="text-align: center; padding: 40px; color: #888;">📊 আপনার কোনো স্পোর্টস বাজি রেকর্ড নেই ওস্তাদ!</div>`;
+        }
+
+    } catch (e) { 
+        historyListContainer.innerHTML = `<div style="text-align: center; padding: 20px; color: #ff003c;">⚠️ হিস্টোরি লোড এরর!</div>`; 
+    }
+}
+
+async function triggerLiveSportsCashout(e, ticketId, cashoutAmt) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!confirm(`🎰 আপনি কি এই বাজি টিকিটটি এখনই ৳${cashoutAmt.toFixed(2)} এ ক্যাশআউট করতে চান ওস্তাদ?`)) return;
+    try {
+        const response = await fetch(`${SERVER_URL}/api/sportsbook/cashout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: urlUserId, betTicketId: ticketId, cashoutAmount: cashoutAmt, wallet: urlWallet })
+        });
+        const result = await response.json();
+        alert(result.message);
+        if (result.success) {
+            fetchLiveBalance();
+            fetchSportsBetHistoryLog();
+        }
+    } catch (err) { alert("🚨 ক্যাশআউট কানেকশন ডিলে!"); }
+}
+
+// ==================== সকেট নেটওয়ার্ক রিয়েল-টাইম লিসেনার প্যানেল ====================
+socket.on("balanceUpdate", (data) => {
+    if (data && data.username === urlUserId) {
+        if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+        fetchLiveBalance();
+    }
+});
+
+// ==================== ইউনিভার্সাল ওতো-উইন্ডো এক্সেকিউশন কোর ====================
+window.onload = () => {
+    if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+    fetchLiveBalance();
+    setTimeout(fetchLiveBalance, 400);
+    
+    if (cachedGlobalMatches && cachedGlobalMatches.length > 0) {
+        renderBet365LuxuryOddsTable(cachedGlobalMatches);
+    }
+};
+</script>
+</body>
+</html>
