@@ -382,7 +382,7 @@
         `;
     }
 
-            html += `
+          html += `
             <div class="bet365-luxury-match-card" onclick="toggleMatchExpansionCard('${m.matchId}')">
                 <div class="luxury-card-meta-row">
                     <span class="meta-league-name">🌍 ${m.country} - 🏆 ${m.league} ${m.matchFormat ? `[${String(m.matchFormat).toUpperCase()}]` : ''}</span>
@@ -401,6 +401,7 @@ function toggleMatchExpansionCard(matchId) {
     expandedMatchesMap[matchId] = !expandedMatchesMap[matchId];
     renderBet365LuxuryOddsTable();
 }
+          
 
 
 function openBet365SlipModal(matchId, matchTitle, marketName, selection, oddsValue) {
