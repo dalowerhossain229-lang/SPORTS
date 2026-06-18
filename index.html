@@ -457,8 +457,11 @@ container.innerHTML = html;
 function toggleMatchExpansionCard(matchId) {
     if (!window.expandedMatchesMap) window.expandedMatchesMap = {};
     expandedMatchesMap[matchId] = !expandedMatchesMap[matchId];
-    renderBet365LuxuryOddsTable(cachedGlobalMatches);
+    
+    // ওস্তাদ, এখানে মেইন ডাটা পাস না করে কারেন্ট ফিল্টার ধরে রি-রেন্ডার করানো হলো
+    applyFiltersAndRender(); 
 }
+
 
 function openBet365SlipModal(event, matchId, matchTitle, marketName, selection, oddsValue) {
     if (event && event.stopPropagation) {
