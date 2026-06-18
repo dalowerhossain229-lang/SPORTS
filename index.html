@@ -178,23 +178,13 @@ function applyFiltersAndRender() {
 }
 
 
-
-
-    
-
     function renderBet365LuxuryOddsTable(matches) {
         const container = document.getElementById("bet365-sports-grid");
         if (!container) return;
+            let html = "";
+    const filteredMatches = matches || [];
+    filteredMatches.forEach(m => {
 
-        let filteredMatches = matches || [];
-
-        if (!filteredMatches || filteredMatches.length === 0) {
-            container.innerHTML = `<div style="text-align: center; padding: 40px; color: #888; font-family: sans-serif; font-weight: bold;">No active matches available at this moment.</div>`;
-            return;
-        }
-
-        let html = "";
-        filteredMatches.forEach(m => {
             const isExpanded = !!expandedMatchesMap[m.matchId];
             let scoreDisplayHTML = "";
             let mainOddsButtonsHTML = "";
