@@ -108,42 +108,63 @@
     });
 
     function switchSportsCategory(categoryName) {
-        currentActiveCategory = categoryName;
-        document.querySelectorAll('.sports-nav-tab').forEach(btn => btn.classList.remove('active'));
-        
-        const targetTab = document.getElementById(`tab-${categoryName}`);
-        if (targetTab) targetTab.classList.add('active');
-        
-        const subBar = document.getElementById("live-sports-sub-bar");
-        if (subBar) {
-            subBar.style.display = (categoryName === 'live') ? "flex" : "none";
+    currentActiveCategory = categoryName;
+    
+    document.querySelectorAll('.sports-nav-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const targetTab = document.getElementById(`tab-${categoryName}`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+    
+    const subBar = document.getElementById("live-sports-sub-bar");
+    if (subBar) {
+        if (categoryName === 'live') {
+            subBar.style.display = "flex";
+        } else {
+            subBar.style.display = "none";
         }
-        
-        currentLiveSportsSub = 'all'; 
-        document.querySelectorAll('.cricket-format-btn').forEach(btn => btn.classList.remove('active'));
-        const defaultSub = document.getElementById("live-sub-all");
-        if (defaultSub) defaultSub.classList.add('active');
-
-        applyFiltersAndRender();
+    }
+    
+    currentLiveSportsSub = 'all'; 
+    document.querySelectorAll('.cricket-format-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const defaultSub = document.getElementById("live-sub-all");
+    if (defaultSub) {
+        defaultSub.classList.add('active');
     }
 
-    function filterLiveSportsSub(subName) {
-        currentLiveSportsSub = subName;
-        document.querySelectorAll('.cricket-format-btn').forEach(btn => btn.classList.remove('active'));
-        
-        const targetSubTab = document.getElementById(`live-sub-${subName}`);
-        if (targetSubTab) targetSubTab.classList.add('active');
-        
-        applyFiltersAndRender();
-    }
+    applyFiltersAndRender();
+}
 
-    function applyFiltersAndRender() {
+function filterLiveSportsSub(subName) {
+    currentLiveSportsSub = subName;
+    
+    document.querySelectorAll('.cricket-format-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const targetSubTab = document.getElementById(`live-sub-${subName}`);
+    if (targetSubTab) {
+        targetSubTab.classList.add('active');
+    }
+    
+    applyFiltersAndRender();
+}
+
+function applyFiltersAndRender() {
     let filteredMatches = [];
     const allMatches = cachedGlobalMatches || [];
 
     if (currentActiveCategory === 'live') {
         filteredMatches = allMatches.filter(m => {
-            if (currentLiveSportsSub === 'all') return true;
+            if (currentLiveSportsSub === 'all') {
+                return true;
+            }
             return String(m.sport).toLowerCase() === String(currentLiveSportsSub).toLowerCase();
         });
     } else {
@@ -154,6 +175,9 @@
 
     renderBet365LuxuryOddsTable(filteredMatches);
 }
+
+
+    
 
     function renderBet365LuxuryOddsTable(matches) {
         const container = document.getElementById("bet365-sports-grid");
