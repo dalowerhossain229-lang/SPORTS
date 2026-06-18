@@ -215,21 +215,26 @@
         }
 
         // ------------------ খ) স্পোর্টস ভিত্তিক মার্কেট রেন্ডারিং ইঞ্জিন ------------------
-        if (m.sport === 'football') {
+                if (m.sport === 'football') {
             let innerFootball = "";
             if (isExpanded) {
+                // ওস্তাদ, এখানে m.odds এর ভেতর ডাটা আছে কিনা তা আগে সেফলি চেক করে নেওয়া হলো
+                const odds = m.odds || {};
+                const fullTime = odds.fullTimeResult || { home: 1.85, draw: 3.20, away: 2.10 };
+                const doubleChance = odds.doubleChance || { homeDraw: 1.25, awayDraw: 1.35 };
+
                 innerFootball = `
-                    <div class="market-section-block" style="margin-top:6px;">
-                        <div class="market-header-title" style="color:#8fa39b; font-size:11px; font-weight:bold; padding:4px 0;">Full Time Result (1X2)</div>
+                    <div class="market-section-block" style="margin-top:6px; background:#16202c; padding:8px; border-radius:4px;">
+                        <div class="market-header-title" style="color:#00ffaa; font-size:11px; font-weight:bold; padding:4px 0;">Full Time Result (1X2)</div>
                         <div class="odds-row-buttons" style="display:flex; gap:4px;">
-                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Full Time Result', 'Home (1)', ${m.odds.fullTimeResult.home})">1<br><span>${m.odds.fullTimeResult.home}</span></button>
-                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Full Time Result', 'Draw (X)', ${m.odds.fullTimeResult.draw})">X<br><span>${m.odds.fullTimeResult.draw}</span></button>
-                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Full Time Result', 'Away (2)', ${m.odds.fullTimeResult.away})">2<br><span>${m.odds.fullTimeResult.away}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Full Time Result', 'Home (1)', ${fullTime.home})">1<br><span>${fullTime.home}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Full Time Result', 'Draw (X)', ${fullTime.draw})">X<br><span>${fullTime.draw}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Full Time Result', 'Away (2)', ${fullTime.away})">2<br><span>${fullTime.away}</span></button>
                         </div>
-                        <div class="market-header-title" style="color:#8fa39b; font-size:11px; font-weight:bold; margin-top:8px;">Double Chance</div>
+                        <div class="market-header-title" style="color:#00ffaa; font-size:11px; font-weight:bold; margin-top:8px;">Double Chance</div>
                         <div class="odds-row-buttons" style="display:flex; gap:4px;">
-                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Double Chance', 'Home or Draw', ${m.odds.doubleChance.homeDraw})">1X (Home/Draw)<br><span>${m.odds.doubleChance.homeDraw}</span></button>
-                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Double Chance', 'Away or Draw', ${m.odds.doubleChance.awayDraw})">X2 (Away/Draw)<br><span>${m.odds.doubleChance.awayDraw}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Double Chance', 'Home or Draw', ${doubleChance.homeDraw})">1X<br><span>${doubleChance.homeDraw}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Double Chance', 'Away or Draw', ${doubleChance.awayDraw})">X2<br><span>${doubleChance.awayDraw}</span></button>
                         </div>
                     </div>
                 `;
@@ -241,27 +246,32 @@
                 </div>
             `;
 
-        } else if (m.sport === 'cricket') {
+
+                } else if (m.sport === 'cricket') {
             let innerCricket = "";
             if (isExpanded) {
+                const odds = m.odds || {};
                 if (m.matchFormat === 't20' || m.matchFormat === 't10') {
+                    // যদি এপিআই তে পাওয়ারপ্লে ডাটা না থাকে তবে ব্যাকআপ হিসেবে ১.৮৫ লোড হবে, ক্র্যাশ করবে না
+                    const pplay = odds.t20PowerplayRuns?.line48_5 || { over: 1.85, under: 1.85 };
                     innerCricket = `
-                        <div class="market-section-block" style="margin-top:6px;">
-                            <div class="market-header-title" style="color:#8fa39b; font-size:11px;">T20 Powerplay Runs</div>
+                        <div class="market-section-block" style="margin-top:6px; background:#16202c; padding:8px; border-radius:4px;">
+                            <div class="market-header-title" style="color:#00ffaa; font-size:11px;">T20 Powerplay Runs (Line 48.5)</div>
                             <div class="odds-row-buttons" style="display:flex; gap:4px;">
-                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Powerplay Runs', 'Over 48.5', ${m.odds.t20PowerplayRuns.line48_5.over})">Over 48.5<br><span>${m.odds.t20PowerplayRuns.line48_5.over}</span></button>
-                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Powerplay Runs', 'Under 48.5', ${m.odds.t20PowerplayRuns.line48_5.under})">Under 48.5<br><span>${m.odds.t20PowerplayRuns.line48_5.under}</span></button>
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Powerplay Runs', 'Over 48.5', ${pplay.over})">Over<br><span>${pplay.over}</span></button>
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Powerplay Runs', 'Under 48.5', ${pplay.under})">Under<br><span>${pplay.under}</span></button>
                             </div>
                         </div>
                     `;
                 } else if (m.matchFormat === 'test') {
+                    const w3way = odds.matchWinner3Way || { home: 2.10, draw: 3.40, away: 2.20 };
                     innerCricket = `
-                        <div class="market-section-block" style="margin-top:6px;">
-                            <div class="market-header-title" style="color:#8fa39b; font-size:11px;">Match Winner 3-Way</div>
+                        <div class="market-section-block" style="margin-top:6px; background:#16202c; padding:8px; border-radius:4px;">
+                            <div class="market-header-title" style="color:#00ffaa; font-size:11px;">Match Winner 3-Way</div>
                             <div class="odds-row-buttons" style="display:flex; gap:4px;">
-                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Team 1', ${m.odds.matchWinner3Way.home})">1<br><span>${m.odds.matchWinner3Way.home}</span></button>
-                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Draw', ${m.odds.matchWinner3Way.draw})">X<br><span>${m.odds.matchWinner3Way.draw}</span></button>
-                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Team 2', ${m.odds.matchWinner3Way.away})">2<br><span>${m.odds.matchWinner3Way.away}</span></button>
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Team 1', ${w3way.home})">1<br><span>${w3way.home}</span></button>
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Draw', ${w3way.draw})">X<br><span>${w3way.draw}</span></button>
+                                <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Team 2', ${w3way.away})">2<br><span>${w3way.away}</span></button>
                             </div>
                         </div>
                     `;
@@ -271,44 +281,52 @@
             marketsHTML = `
                 <div class="market-section-block">
                     <div class="odds-row-buttons" style="display:flex; gap:4px;">
-                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 2-Way', 'Team 1', ${m.odds.matchWinner2Way ? m.odds.matchWinner2Way.home : 1.85})">Team 1<br><span>${m.odds.matchWinner2Way ? m.odds.matchWinner2Way.home : 1.85}</span></button>
-                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 2-Way', 'Team 2', ${m.odds.matchWinner2Way ? m.odds.matchWinner2Way.away : 1.85})">Team 2<br><span>${m.odds.matchWinner2Way ? m.odds.matchWinner2Way.away : 1.85}</span></button>
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 2-Way', 'Team 1', ${m.odds?.matchWinner2Way?.home || 1.85})">Team 1<br><span>${m.odds?.matchWinner2Way?.home || 1.85}</span></button>
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 2-Way', 'Team 2', ${m.odds?.matchWinner2Way?.away || 1.85})">Team 2<br><span>${m.odds?.matchWinner2Way?.away || 1.85}</span></button>
                     </div>
-                    ${isExpanded ? innerCricket : ''}
+                    ${innerCricket}
                 </div>
             `;
 
-        } else if (m.sport === 'tennis') {
+
+                } else if (m.sport === 'tennis') {
             let innerTennis = "";
+            const odds = m.odds || {};
+            const winSet = odds.toWinSet || { home: 1.85, away: 1.85 };
+            const win2way = odds.matchWinner2Way || { home: 1.85, away: 1.85 };
+            const curSet = odds.currentSetWinner || { home: 1.85, away: 1.85 };
+            const nextGame = odds.nextGameWinner || { home: 1.85, away: 1.85 };
+
             if (isExpanded) {
                 innerTennis = `
-                    <div class="market-section-block" style="margin-top:6px;">
-                        <div class="market-header-title" style="color:#8fa39b; font-size:11px;">To Win Set</div>
+                    <div class="market-section-block" style="margin-top:6px; background:#16202c; padding:8px; border-radius:4px;">
+                        <div class="market-header-title" style="color:#00ffaa; font-size:11px;">To Win Set</div>
                         <div class="odds-row-buttons" style="display:flex; gap:4px;">
-                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Set', 'Player 1', ${m.odds.toWinSet.home})">Set P1<br><span>${m.odds.toWinSet.home}</span></button>
-                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Set', 'Player 2', ${m.odds.toWinSet.away})">Set P2<br><span>${m.odds.toWinSet.away}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Set', 'Player 1', ${winSet.home})">Set P1<br><span>${winSet.home}</span></button>
+                            <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Set', 'Player 2', ${winSet.away})">Set P2<br><span>${winSet.away}</span></button>
                         </div>
                     </div>
                 `;
             }
 
-                    marketsHTML = `
-            <div class="market-section-block">
-                <div class="market-header-title" style="color:#8fa39b; font-size:11px; font-weight:bold; padding:2px 0;">Quick In-Play Markets</div>
-                <div class="odds-row-buttons" style="display:flex; gap:4px;">
-                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Winner', 'Player 1', ${m.odds.matchWinner2Way.home})">Winner 1<br><span>${m.odds.matchWinner2Way.home}</span></button>
-                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Current Set', 'Player 1', ${m.odds.currentSetWinner.home})">Set 1<br><span>${m.odds.currentSetWinner.home}</span></button>
-                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Game', 'Player 1', ${m.odds.nextGameWinner.home})">Game 1<br><span>${m.odds.nextGameWinner.home}</span></button>
+            marketsHTML = `
+                <div class="market-section-block">
+                    <div class="market-header-title" style="color:#8fa39b; font-size:11px; font-weight:bold; padding:2px 0;">Quick In-Play Markets</div>
+                    <div class="odds-row-buttons" style="display:flex; gap:4px;">
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Winner', 'Player 1', ${win2way.home})">Winner 1<br><span>${win2way.home}</span></button>
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Current Set', 'Player 1', ${curSet.home})">Set 1<br><span>${curSet.home}</span></button>
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Game', 'Player 1', ${nextGame.home})">Game 1<br><span>${nextGame.home}</span></button>
+                    </div>
+                    <div class="odds-row-buttons" style="display:flex; gap:4px; margin-top:4px;">
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Winner', 'Player 2', ${win2way.away})">Winner 2<br><span>${win2way.away}</span></button>
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Current Set', 'Player 2', ${curSet.away})">Set 2<br><span>${curSet.away}</span></button>
+                        <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Game', 'Player 2', ${nextGame.away})">Game 2<br><span>${nextGame.away}</span></button>
+                    </div>
+                    ${innerTennis}
                 </div>
-                <div class="odds-row-buttons" style="display:flex; gap:4px; margin-top:4px;">
-                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Winner', 'Player 2', ${m.odds.matchWinner2Way.away})">Winner 2<br><span>${m.odds.matchWinner2Way.away}</span></button>
-                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Current Set', 'Player 2', ${m.odds.currentSetWinner.away})">Set 2<br><span>${m.odds.currentSetWinner.away}</span></button>
-                    <button class="odds-bet-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Game', 'Player 2', ${m.odds.nextGameWinner.away})">Game 2<br><span>${m.odds.nextGameWinner.away}</span></button>
-                </div>
-                ${isExpanded ? innerTennis : ''}
-            </div>
-        `;
-    }
+            `;
+        }
+
 
     // ------------------ গ) মেগা ডাইনামিক ম্যাচ কার্ড এইচটিএমএল জেনারেশন ------------------
     html += `
