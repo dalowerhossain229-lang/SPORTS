@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 const MAIN_SITE_URL = "https://betlover247.onrender.com"; 
 
 // 🔑 [🔒 সচল এপিআই চাবিকাঠি এবং টাইমআউট বুস্টার টাইট লক 🔒]
-const SPORTS_API_KEY = "179f884145mshbf03d6d5ba4b423p17e29bjsn0fb74542d9df"; 
+const SPORTS_API_KEY = "ee4cc3794da394250376716b0791fe7e"; 
 
 // 📥 মেমোরি লকিং কন্টেইনারস: ৩টি খেলার অল-মার্কেট লাইভ ফিড এবং ডেডিকেটেড স্পোর্টস বেট হিস্টোরি লোকাল ডাটাবেজ ভাই ভাই!
 let bet365ActiveFeeds = [];
