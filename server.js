@@ -26,6 +26,8 @@ app.use((req, res, next) => {
 });
 
 const MAIN_SITE_URL = "https://betlover247.onrender.com"; 
+// আপনার ফাইলের ওপরের দিকের ৪৩ নম্বর লাইনে এটি বসিয়ে দিন
+const SPORTS_API_KEY = "49ff265bf6b12a875a6c0bbfd87dfdce"; 
 
 
 let bet365ActiveFeeds = [];
