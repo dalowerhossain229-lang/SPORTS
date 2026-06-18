@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 const MAIN_SITE_URL = "https://betlover247.onrender.com"; 
-const SPORTS_API_KEY = "ee4cc3794da394250376716b0791fe7e"; 
+
 
 let bet365ActiveFeeds = [];
 let sportsBetHistoryDb = [];
