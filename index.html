@@ -102,12 +102,13 @@
         } catch (e) { console.error("Balance fetch error handled"); }
     }
 
-    socket.on("bet365LiveOddsUpdate", (matches) => {
-        cachedGlobalMatches = matches;
-        applyFiltersAndRender();
-    });
+    // Socket Event Data Safeguard
+socket.on("bet365LiveOddsUpdate", (matches) => {
+    cachedGlobalMatches = matches;
+    applyFiltersAndRender();
+});
 
-    function switchSportsCategory(categoryName) {
+function switchSportsCategory(categoryName) {
     currentActiveCategory = categoryName;
     
     document.querySelectorAll('.sports-nav-tab').forEach(btn => {
@@ -175,6 +176,8 @@ function applyFiltersAndRender() {
 
     renderBet365LuxuryOddsTable(filteredMatches);
 }
+
+
 
 
     
