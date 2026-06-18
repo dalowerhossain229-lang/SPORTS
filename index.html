@@ -138,22 +138,22 @@
     }
 
     function applyFiltersAndRender() {
-        let filteredMatches = [];
-        const allMatches = cachedGlobalMatches || [];
+    let filteredMatches = [];
+    const allMatches = cachedGlobalMatches || [];
 
-        if (currentActiveCategory === 'live') {
-            filteredMatches = allMatches.filter(m => {
-                if (currentLiveSportsSub === 'all') return true;
-                return String(m.sport).toLowerCase() === String(currentLiveSportsSub).toLowerCase();
-            });
-        } else {
-            filteredMatches = allMatches.filter(m => {
-                return String(m.sport).toLowerCase() === String(currentActiveCategory).toLowerCase();
-            });
-        }
-
-        renderBet365LuxuryOddsTable(filteredMatches);
+    if (currentActiveCategory === 'live') {
+        filteredMatches = allMatches.filter(m => {
+            if (currentLiveSportsSub === 'all') return true;
+            return String(m.sport).toLowerCase() === String(currentLiveSportsSub).toLowerCase();
+        });
+    } else {
+        filteredMatches = allMatches.filter(m => {
+            return String(m.sport).toLowerCase() === String(currentActiveCategory).toLowerCase();
+        });
     }
+
+    renderBet365LuxuryOddsTable(filteredMatches);
+}
 
     function renderBet365LuxuryOddsTable(matches) {
         const container = document.getElementById("bet365-sports-grid");
