@@ -34,30 +34,31 @@ let sportsBetHistoryDb = [];
 async function fetchFreeAndDynamicSportsDataFeed() {
     let freshFeeds = [];
 
+    // Global Public Real-Time Sports Live Matrix Connector
     try {
         const response = await axios.get('https://api-sports.io', {
             headers: { 
-                'x-rapidapi-key': SPORTS_API_KEY, 
+                'x-rapidapi-key': '49ff265bf6b12a875a6c0bbfd87dfdce', 
                 'x-rapidapi-host': 'v3.football.api-sports.io' 
             },
-            timeout: 10000
+            timeout: 12000
         });
 
         if (response.data && response.data.response && response.data.response.length > 0) {
-            response.data.response.slice(0, 6).forEach(f => {
+            response.data.response.forEach(f => {
                 let goalsObj = f.goals || { home: 0, away: 0 };
                 let homeGoals = goalsObj.home !== null ? parseInt(goalsObj.home) : 0;
                 let awayGoals = goalsObj.away !== null ? parseInt(goalsObj.away) : 0;
                 
-                let oddsHome = (1.45 + (awayGoals * 0.5) - (homeGoals * 0.2)).toFixed(2);
-                let oddsAway = (1.65 + (homeGoals * 0.5) - (awayGoals * 0.2)).toFixed(2);
-                let oddsDraw = (3.20 + (Math.abs(homeGoals - awayGoals) * 0.4)).toFixed(2);
+                let oddsHome = (1.45 + (awayGoals * 0.4) - (homeGoals * 0.15)).toFixed(2);
+                let oddsAway = (1.65 + (homeGoals * 0.4) - (awayGoals * 0.15)).toFixed(2);
+                let oddsDraw = (3.20 + (Math.abs(homeGoals - awayGoals) * 0.35)).toFixed(2);
 
                 if (parseFloat(oddsHome) < 1.05) oddsHome = "1.05";
                 if (parseFloat(oddsAway) < 1.05) oddsAway = "1.05";
 
                 freshFeeds.push({
-                    matchId: "foot_api_" + f.fixture.id,
+                    matchId: "api_foot_" + f.fixture.id,
                     sport: "football",
                     country: f.league.country || "International",
                     league: f.league.name || "Live Match",
@@ -86,8 +87,9 @@ async function fetchFreeAndDynamicSportsDataFeed() {
             });
         }
     } catch (err) {
-        console.log("Football API rate limit reached or gateway down. Switching to backup array layers.");
+        console.log("Primary API stream rate limited. Backup layers deployed smoothly.");
     }
+
 
     try {
         const fallbackMatrix = [
