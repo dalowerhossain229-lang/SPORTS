@@ -132,15 +132,32 @@
         renderBet365LuxuryOddsTable(cachedGlobalMatches);
     }
 
-    function filterLiveSportsSub(subName) {
-        currentLiveSportsSub = subName;
-        document.querySelectorAll('.cricket-format-btn').forEach(btn => btn.classList.remove('active'));
-        
-        const targetSubTab = document.getElementById(`live-sub-${subName}`);
-        if (targetSubTab) targetSubTab.classList.add('active');
-        
-        renderBet365LuxuryOddsTable(cachedGlobalMatches);
+    function applyFiltersAndRender() {
+    let filteredMatches = [];
+    
+    // গ্লোবাল সোর্স থেকে ডাটা সেভগার্ড ব্যাকআপ নেওয়া হলো
+    const allMatches = cachedGlobalMatches || [];
+
+    if (currentActiveCategory === 'live') {
+        // ওস্তাদ, এখানে লাইভ ম্যাচের ভেতরের সাব-ফিল্টার প্রসেস হচ্ছে
+        filteredMatches = allMatches.filter(m => {
+            // যদি সাব-ফিল্টার 'all' হয়, তবে লাইভ ক্যাটাগরির সব স্পোর্টস দেখাবে
+            if (currentLiveSportsSub === 'all') return true;
+            
+            // স্পোর্টস টাইপ চেক (m.sport এর মান ছোট হাতের অক্ষরে 'cricket', 'football', 'tennis' মিলিয়ে দেখা হচ্ছে)
+            return String(m.sport).toLowerCase() === String(currentLiveSportsSub).toLowerCase();
+        });
+    } else {
+        // মেইন মেনু বারের অন্যান্য ক্যাটাগরি ফিল্টার (CRICKET, FOOTBALL, TENNIS)
+        filteredMatches = allMatches.filter(m => {
+            return String(m.sport).toLowerCase() === String(currentActiveCategory).toLowerCase();
+        });
     }
+
+    // ফিল্টার করা নিখুঁত ডাটা নিয়ে টেবিল রেন্ডার করা হলো
+    renderBet365LuxuryOddsTable(filteredMatches);
+}
+
 
 
      
