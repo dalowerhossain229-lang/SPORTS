@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bet365 Premium Multi-Sportsbook - VIP CASINO</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bet365-stadium">
+    
+    <div class="bet365-sports-nav-scroll">
+        <button class="sports-nav-tab active" id="tab-live" onclick="switchSportsCategory('live')">LIVE SPORTS</button>
+        <button class="sports-nav-tab" id="tab-cricket" onclick="switchSportsCategory('cricket')">CRICKET</button>
+        <button class="sports-nav-tab" id="tab-football" onclick="switchSportsCategory('football')">FOOTBALL</button>
+        <button class="sports-nav-tab" id="tab-tennis" onclick="switchSportsCategory('tennis')">TENNIS</button>
+    </div>
+
+    <div id="live-sports-sub-bar" class="cricket-formats-sub-nav" style="display: flex;">
+        <button class="cricket-format-btn active" id="live-sub-all" onclick="filterLiveSportsSub('all')">ALL LIVE</button>
+        <button class="cricket-format-btn" id="live-sub-cricket" onclick="filterLiveSportsSub('cricket')">CRICKET LIVE</button>
+        <button class="cricket-format-btn" id="live-sub-football" onclick="filterLiveSportsSub('football')">FOOTBALL LIVE</button>
+        <button class="cricket-format-btn" id="live-sub-tennis" onclick="filterLiveSportsSub('tennis')">TENNIS LIVE</button>
+    </div>
+
+    <div id="bet365-sports-grid" class="bet365-grid-wrapper">
+        <div style="text-align: center; padding: 40px; color: #888; font-family: sans-serif; font-weight: bold;">
+            Connecting Sports Live Data Feed...
+        </div>
+    </div>
+
+    <div id="bet365-slip-overlay" class="bet365-popup-overlay">
+        <div class="bet365-popup-box">
+            <div class="bet365-popup-title" id="slip-match-title">Real Madrid vs Barcelona</div>
+            <div class="slip-market-badge" id="slip-market-name">Match Winner</div>
+            <div class="slip-details-row">
+                Selection: <span id="slip-selection" style="color: #ffdf00; font-weight: 950;">Home</span> 
+                | Odds: <span id="slip-odds" style="color: #00ff66; font-weight: 950;">1.85</span>
+            </div>
+            <div class="slip-input-container">
+                <input type="number" id="slip-bet-amount" value="100" min="10" placeholder="BDT Stake">
+            </div>
+            <div class="slip-btn-group">
+                <button class="slip-cancel-btn" onclick="closeBet365SlipModal(event)">CANCEL</button>
+                <button class="slip-confirm-btn" id="slip-submit-btn" onclick="confirmBet365Placement()">PLACE BET</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sports-history-sidebar" class="sports-history-panel-overlay">
+        <div class="sports-history-content-box">
+            <div class="history-panel-header">
+                <h3>SPORTS BET HISTORY</h3>
+                <button class="history-close-x-btn" onclick="toggleSportsHistoryPanel(event, false)">✕</button>
+            </div>
+            <div id="sports-history-log-list" class="history-log-scroll-area">
+                <div style="text-align: center; padding: 20px; color: #aaa;">Loading Bet Logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bet365-footer-betslip-bar" onclick="toggleSportsHistoryPanel(event, true)">
+        <div class="betslip-btn-content">
+            <span class="betslip-icon">📋</span>
+            <span class="betslip-text">BET SLIP / LIVE CASHOUT</span>
+        </div>
+    </div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUserId = urlParams.get('userId') || urlParams.get('id') || urlParams.get('username') || "guest_user";
+    const urlWallet = urlParams.get('wallet') || "main";
+    
+    const SERVER_URL = window.location.origin;
+
+    let balance = 0.00;
+    let isBetPlacing = false;
+    let activeSlipData = null;
+    let currentActiveCategory = 'live'; 
+    let currentLiveSportsSub = 'all'; 
+    let cachedGlobalMatches = [];
+    let expandedMatchesMap = {}; 
+
+    const socket = io({
+        transports: ['websocket', 'polling'],
+        upgrade: true
+    });
+
+    async function fetchLiveBalance() {
+        try {
+            const response = await fetch(`${SERVER_URL}/api/rainbow-balance?userId=${urlUserId}&wallet=${urlWallet}`);
+            const data = await response.json();
+            if (data && data.success) {
+                balance = parseFloat(data.balance);
+                const balEl = document.getElementById("main-balance-display");
+                if (balEl) balEl.innerText = balance.toFixed(2);
+            }
+        } catch (e) { console.error("Balance fetch error handled"); }
+    }
+
+    socket.on("bet365LiveOddsUpdate", (matches) => {
+        cachedGlobalMatches = matches;
+        applyFiltersAndRender();
+    });
+
+    function switchSportsCategory(categoryName) {
+        currentActiveCategory = categoryName;
+        document.querySelectorAll('.sports-nav-tab').forEach(btn => btn.classList.remove('active'));
+        
+        const targetTab = document.getElementById(`tab-${categoryName}`);
+        if (targetTab) targetTab.classList.add('active');
+        
+        const subBar = document.getElementById("live-sports-sub-bar");
+        if (subBar) {
+            subBar.style.display = (categoryName === 'live') ? "flex" : "none";
+        }
+        
+        currentLiveSportsSub = 'all'; 
+        document.querySelectorAll('.cricket-format-btn').forEach(btn => btn.classList.remove('active'));
+        const defaultSub = document.getElementById("live-sub-all");
+        if (defaultSub) defaultSub.classList.add('active');
+
+        applyFiltersAndRender();
+    }
+
+    function filterLiveSportsSub(subName) {
+        currentLiveSportsSub = subName;
+        document.querySelectorAll('.cricket-format-btn').forEach(btn => btn.classList.remove('active'));
+        
+        const targetSubTab = document.getElementById(`live-sub-${subName}`);
+        if (targetSubTab) targetSubTab.classList.add('active');
+        
+        applyFiltersAndRender();
+    }
+
+    function applyFiltersAndRender() {
+        let filteredMatches = [];
+        const allMatches = cachedGlobalMatches || [];
+
+        if (currentActiveCategory === 'live') {
+            filteredMatches = allMatches.filter(m => {
+                if (currentLiveSportsSub === 'all') return true;
+                return String(m.sport).toLowerCase() === String(currentLiveSportsSub).toLowerCase();
+            });
+        } else {
+            filteredMatches = allMatches.filter(m => {
+                return String(m.sport).toLowerCase() === String(currentActiveCategory).toLowerCase();
+            });
+        }
+
+        renderBet365LuxuryOddsTable(filteredMatches);
+    }
+
+    function renderBet365LuxuryOddsTable(matches) {
+        const container = document.getElementById("bet365-sports-grid");
+        if (!container) return;
+
+        let filteredMatches = matches || [];
+
+        if (!filteredMatches || filteredMatches.length === 0) {
+            container.innerHTML = `<div style="text-align: center; padding: 40px; color: #888; font-family: sans-serif; font-weight: bold;">No active matches available at this moment.</div>`;
+            return;
+        }
+
+        let html = "";
+        filteredMatches.forEach(m => {
+            const isExpanded = !!expandedMatchesMap[m.matchId];
+            let scoreDisplayHTML = "";
+            let mainOddsButtonsHTML = "";
+            let expandedMarketsHTML = "";
+            let marketsHTML = "";
+
+            const odds = m.odds || {};
+
+            if (String(m.sport).toLowerCase() === 'tennis') {
+                try {
+                    let sH = (typeof m.scoreHome === 'string') ? JSON.parse(m.scoreHome) : (m.scoreHome || { set: 0, game: 0, point: "0" });
+                    let sA = (typeof m.scoreAway === 'string') ? JSON.parse(m.scoreAway) : (m.scoreAway || { set: 0, game: 0, point: "0" });
+                    
+                            scoreDisplayHTML = `
+            <div class="luxury-teams-score-grid" style="display:flex; justify-content:space-between; align-items:center; width:100%; color:#fff; padding:6px 0;">
+                <div>
+                    <div class="luxury-team-name">Tennis - ${m.teamHome}</div>
+                    <div class="luxury-team-name" style="margin-top:4px;">Tennis - ${m.teamAway}</div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <div style="font-size:11px; color:#aaa; display:flex; flex-direction:column; gap:4px; text-align:center;">
+                        <span>Set: ${sH.set ?? 0}</span>
+                        <span>Set: ${sA.set ?? 0}</span>
+                    </div>
+                    <div style="font-size:11px; color:#aaa; display:flex; flex-direction:column; gap:4px; text-align:center;">
+                        <span>Game: ${sH.game ?? 0}</span>
+                        <span>Game: ${sA.game ?? 0}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span class="b365-tennis-live-pts" style="background:#00ffaa; color:#000; font-size:11px; padding:1px 5px; border-radius:2px; font-weight:bold;">${sH.point ?? 0}</span>
+                        <span class="b365-tennis-live-pts" style="background:#00ffaa; color:#000; font-size:11px; padding:1px 5px; border-radius:2px; font-weight:bold;">${sA.point ?? 0}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    } catch (e) {
+        scoreDisplayHTML = `
+            <div class="luxury-teams-score-grid" style="color:#fff; padding:6px 0;">
+                <div class="luxury-team-name">${m.teamHome} vs ${m.teamAway}</div>
+            </div>
+        `;
+    }
+} else {
+    scoreDisplayHTML = `
+        <div class="luxury-teams-score-grid" style="color:#fff; padding:6px 0; width:100%;">
+            <div style="display:flex; justify-content:space-between;">
+                <span class="luxury-team-name">${m.teamHome}</span>
+                <b class="luxury-score-badge" style="color:#ffdf00;">${m.scoreHome ?? '0'}</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                <span class="luxury-team-name">${m.teamAway}</span>
+                <b class="luxury-score-badge" style="color:#ffdf00;">${m.scoreAway ?? '0'}</b>
+            </div>
+        </div>
+    `;
+}
+
+if (m.sport === 'football') {
+    const fTime = odds.fullTimeResult || { home: 1.85, draw: 3.40, away: 2.10 };
+    let innerFootball = "";
+    
+    if (isExpanded) {
+        const dChance = odds.doubleChance || { homeDraw: 1.25, awayDraw: 1.35 };
+        const mGoal = odds.matchGoal?.line1_5 || { over: 1.65, under: 2.10 };
+        const mCorners = odds.matchCorners?.line9 || { over: 1.85, exactly: 6.00, under: 1.95 };
+        const mCards = odds.numberOfCards || { over1_5: 1.75, under1_5: 1.95 };
+
+        innerFootball = `
+            <div class="b365-expanded-inner-panel" style="background:#141c26; padding:6px; border-radius:4px; margin-top:6px; display:flex; flex-direction:column; gap:6px;">
+                <div>
+                    <div class="b365-market-sub-title" style="color:#8fa39b; font-size:11px; font-weight:bold; margin-bottom:4px;">Double Chance</div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="b365-action-odds-btn long" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:8px; border-radius:3px; display:flex; justify-content:space-between;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Double Chance', 'Home or Draw', ${dChance.homeDraw})"><span>1X (Home/Draw)</span><b>${dChance.homeDraw}</b></button>
+                        <button class="b365-action-odds-btn long" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:8px; border-radius:3px; display:flex; justify-content:space-between;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Double Chance', 'Away or Draw', ${dChance.awayDraw})"><span>X2 (Away/Draw)</span><b>${dChance.awayDraw}</b></button>
+                    </div>
+                </div>
+                <div>
+                    <div class="b365-market-sub-title" style="color:#8fa39b; font-size:11px; font-weight:bold; margin-bottom:4px;">Match Goal Line (Over/Under 1.5)</div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="b365-action-odds-btn long" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:8px; border-radius:3px; display:flex; justify-content:space-between;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Goal', 'Over 1.5', ${mGoal.over})"><span>Over 1.5</span><b>${mGoal.over}</b></button>
+                        <button class="b365-action-odds-btn long" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:8px; border-radius:3px; display:flex; justify-content:space-between;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Goal', 'Under 1.5', ${mGoal.under})"><span>Under 1.5</span><b>${mGoal.under}</b></button>
+                    </div>
+                </div>
+                <div>
+                    <div class="b365-market-sub-title" style="color:#8fa39b; font-size:11px; font-weight:bold; margin-bottom:4px;">Match Corners (Line 9)</div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="b365-action-odds-btn" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:6px; border-radius:3px;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Corners', 'Over 9', ${mCorners.over})">Over<br>${mCorners.over}</button>
+                        <button class="b365-action-odds-btn" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:6px; border-radius:3px;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Corners', 'Exactly 9', ${mCorners.exactly})">Exact<br>${mCorners.exactly}</button>
+                        <button class="b365-action-odds-btn" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:6px; border-radius:3px;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Corners', 'Under 9', ${mCorners.under})">Under<br>${mCorners.under}</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="b365-market-sub-title" style="color:#8fa39b; font-size:11px; font-weight:bold; margin-bottom:4px;">Number of Cards</div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="b365-action-odds-btn long" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:8px; border-radius:3px; display:flex; justify-content:space-between;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Number of Cards', 'Over 1.5', ${mCards.over1_5})"><span>Over 1.5 Cards</span><b>${mCards.over1_5}</b></button>
+                        <button class="b365-action-odds-btn long" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:8px; border-radius:3px; display:flex; justify-content:space-between;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Number of Cards', 'Under 1.5', ${mCards.under1_5})"><span>Under 1.5 Cards</span><b>${mCards.under1_5}</b></button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    marketsHTML = `
+        <div class="market-section-block" style="width:100%;">
+            <div class="bet365-odds-actions-grid triplet" style="display:flex; gap:4px; margin-bottom:4px;">
+                <button class="b365-action-odds-btn" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:6px; border-radius:3px;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner', 'Home', ${fTime.home})"><span>1</span><br><b>${fTime.home}</b></button>
+                <button class="b365-action-odds-btn" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:6px; border-radius:3px;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner', 'Draw', ${fTime.draw})"><span>X</span><br><b>${fTime.draw}</b></button>
+                <button class="b365-action-odds-btn" style="flex:1; background:#1a2531; border:none; color:#ffdf00; padding:6px; border-radius:3px;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner', 'Away', ${fTime.away})"><span>2</span><br><b>${fTime.away}</b></button>
+            </div>
+            ${innerFootball}
+        </div>
+    `;
+
+} else if (m.sport === 'cricket') {
+    const mFormat = String(m.matchFormat || 't20').toLowerCase();
+    let frontOddsHTML = "";
+    let innerCricket = "";
+
+            if (mFormat === 'test') {
+            const w3way = odds.matchWinner3Way || { home: 1.85, draw: 3.50, away: 1.85 };
+            frontOddsHTML = `
+                <div class="bet365-odds-actions-grid triplet">
+                    <button class="b365-action-odds-btn" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Team 1', ${w3way.home})"><span>1</span><b>${w3way.home}</b></button>
+                    <button class="b365-action-odds-btn" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Draw', ${w3way.draw})"><span>X</span><b>${w3way.draw}</b></button>
+                    <button class="b365-action-odds-btn" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 3-Way', 'Team 2', ${w3way.away})"><span>2</span><b>${w3way.away}</b></button>
+                </div>
+            `;
+
+            if (isExpanded) {
+                const firstInnings = odds.firstInningsLead || { homeLead: 1.85, awayLead: 1.85 };
+                innerCricket = `
+                    <div class="b365-expanded-inner-panel">
+                        <div class="b365-market-sub-title">1st Innings Lead Winner</div>
+                        <div style="display:flex; gap:4px;">
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', '1st Innings Lead', '${m.teamHome}', ${firstInnings.homeLead})"><span>Team 1 Lead</span> <b>${firstInnings.homeLead}</b></button>
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', '1st Innings Lead', '${m.teamAway}', ${firstInnings.awayLead})"><span>Team 2 Lead</span> <b>${firstInnings.awayLead}</b></button>
+                        </div>
+                    </div>
+                `;
+            }
+        } else {
+            const cWin = odds.matchWinner2Way || { home: 1.85, away: 1.85 };
+            frontOddsHTML = `
+                <div class="bet365-odds-actions-grid doublet">
+                    <button class="b365-action-odds-btn" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 2-Way', 'Team 1', ${cWin.home})"><span>1</span><b>${cWin.home}</b></button>
+                    <button class="b365-action-odds-btn" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Match Winner 2-Way', 'Team 2', ${cWin.away})"><span>2</span><b>${cWin.away}</b></button>
+                </div>
+            `;
+
+            if (isExpanded) {
+                const nextOverRuns = odds.nextOverRunsTeam1_2 || odds.nextOverRuns || { over: 1.85, under: 1.85 };
+                const nextOverRunOddEven = odds.nextOverRunOddEven || { odd: 1.90, even: 1.90 };
+                const nextOverTeamsWicket = odds.nextOverTeamsWicket || { yes: 3.50, no: 1.25 };
+                const team1Total50OversRuns = odds.team1Total50OversRuns || { over: 1.83, under: 1.83 };
+                const runsIn1st10Overs = odds.runsIn1st10Overs || { over: 1.83, under: 1.83 };
+
+                innerCricket = `
+                    <div class="b365-expanded-inner-panel">
+                        <div class="b365-market-sub-title">Next Over Runs Team 1/2 (Line 9.5)</div>
+                        <div style="display:flex; gap:4px; margin-bottom:8px;">
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Over Runs', 'Over 9.5', ${nextOverRuns.over || 1.85})"><span>Over 9.5</span> <b>${nextOverRuns.over || 1.85}</b></button>
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Over Runs', 'Under 9.5', ${nextOverRuns.under || 1.85})"><span>Under 9.5</span> <b>${nextOverRuns.under || 1.85}</b></button>
+                        </div>
+
+                        <div class="b365-market-sub-title">Next Over Run (Odd/Even)</div>
+                        <div style="display:flex; gap:4px; margin-bottom:8px;">
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Over Run Odd/Even', 'Odd', ${nextOverRunOddEven.odd || 1.90})"><span>Odd</span> <b>${nextOverRunOddEven.odd || 1.90}</b></button>
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Over Run Odd/Even', 'Even', ${nextOverRunOddEven.even || 1.90})"><span>Even</span> <b>${nextOverRunOddEven.even || 1.90}</b></button>
+                        </div>
+
+                        <div class="b365-market-sub-title">Next Over Teams Wicket</div>
+                        <div style="display:flex; gap:4px; margin-bottom:8px;">
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Over Teams Wicket', 'Yes', ${nextOverTeamsWicket.yes || 3.50})"><span>Yes</span> <b>${nextOverTeamsWicket.yes || 3.50}</b></button>
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Over Teams Wicket', 'No', ${nextOverTeamsWicket.no || 1.25})"><span>No</span> <b>${nextOverTeamsWicket.no || 1.25}</b></button>
+                        </div>
+
+                        <div class="b365-market-sub-title">Team 1 Total 50 Overs Runs</div>
+                        <div style="display:flex; gap:4px; margin-bottom:8px;">
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Team 1 Total 50 Overs Runs', 'Over 321.5', ${team1Total50OversRuns.over || 1.83})"><span>Over 321.5</span> <b>${team1Total50OversRuns.over || 1.83}</b></button>
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Team 1 Total 50 Overs Runs', 'Under 321.5', ${team1Total50OversRuns.under || 1.83})"><span>Under 321.5</span> <b>${team1Total50OversRuns.under || 1.83}</b></button>
+                        </div>
+
+                        <div class="b365-market-sub-title">Runs in 1st 10 Overs (Run 30)</div>
+                        <div style="display:flex; gap:4px;">
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Runs in 1st 10 Overs', 'Over 1.83', ${runsIn1st10Overs.over || 1.83})"><span>Over 1.83</span> <b>${runsIn1st10Overs.over || 1.83}</b></button>
+                            <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Runs in 1st 10 Overs', 'Under 1.83', ${runsIn1st10Overs.under || 1.83})"><span>Under 1.83</span> <b>${runsIn1st10Overs.under || 1.83}</b></button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        mainOddsButtonsHTML = frontOddsHTML;
+        marketsHTML = `
+            <div class="market-section-block">
+                ${isExpanded ? innerCricket : ''}
+            </div>
+        `;
+
+    } else if (m.sport === 'tennis') {
+        const tWin = odds.matchWinner2Way || odds.toWinMatch || { home: 1.85, away: 1.85 };
+        const curSet = odds.currentSetWinner || { home: 1.85, away: 1.85 };
+        const nextGame = odds.nextGameWinner || { home: 1.85, away: 1.85 };
+
+        mainOddsButtonsHTML = `
+            <div class="bet365-odds-actions-grid doublet">
+                <button class="b365-action-odds-btn" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Match', 'Player 1', ${tWin.home})"><span>1</span><b>${tWin.home}</b></button>
+                <button class="b365-action-odds-btn" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Match', 'Player 2', ${tWin.away})"><span>2</span><b>${tWin.away}</b></button>
+            </div>
+        `;
+
+        if (isExpanded) {
+            const tSet = odds.toWinSet || { home: 1.85, away: 1.85 };
+            expandedMarketsHTML = `
+                <div class="b365-expanded-inner-panel">
+                    <div class="b365-market-sub-title">To Win Current Set</div>
+                    <div style="display:flex; gap:4px; margin-bottom:8px;">
+                        <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Set', 'Player 1', ${tSet.home})"><span>Set Player 1</span> <b>${tSet.home}</b></button>
+                        <button class="b365-action-odds-btn long" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'To Win Set', 'Player 2', ${tSet.away})"><span>Set Player 2</span> <b>${tSet.away}</b></button>
+                    </div>
+                </div>
+            `;
+        }
+
+                marketsHTML = `
+            <div class="market-section-block">
+                <div class="b365-market-sub-title" style="color:#8fa39b; font-size:11px; font-weight:bold; padding:2px 0;">Quick In-Play Markets</div>
+                <div class="odds-row-buttons" style="display:flex; gap:4px;">
+                    <button class="b365-action-odds-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Winner', 'Player 1', ${tWin.home})"><span>Winner 1</span><b>${tWin.home}</b></button>
+                    <button class="b365-action-odds-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Current Set', 'Player 1', ${curSet.home})"><span>Set 1</span><b>${curSet.home}</b></button>
+                    <button class="b365-action-odds-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Game', 'Player 1', ${nextGame.home})"><span>Game 1</span><b>${nextGame.home}</b></button>
+                </div>
+                <div class="odds-row-buttons" style="display:flex; gap:4px; margin-top:4px;">
+                    <button class="b365-action-odds-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Winner', 'Player 2', ${tWin.away})"><span>Winner 2</span><b>${tWin.away}</b></button>
+                    <button class="b365-action-odds-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Current Set', 'Player 2', ${curSet.away})"><span>Set 2</span><b>${curSet.away}</b></button>
+                    <button class="b365-action-odds-btn" style="flex:1;" onclick="openBet365SlipModal(event, '${m.matchId}', '${m.teamHome} vs ${m.teamAway}', 'Next Game', 'Player 2', ${nextGame.away})"><span>Game 2</span><b>${nextGame.away}</b></button>
+                </div>
+                ${isExpanded ? expandedMarketsHTML : ''}
+            </div>
+        `;
+    }
+
+    html += `
+        <div class="b365-premium-match-card">
+            <div class="b365-meta-top-row">
+                <span class="b365-league-txt">Country: ${m.country || 'Intl'} - League: ${m.league || 'League'} ${m.matchFormat ? `[${String(m.matchFormat).toUpperCase()}]` : ''}</span>
+                <span class="b365-timer-txt">Time: ${m.matchTime || 'LIVE'}</span>
+            </div>
+            
+            <div class="b365-core-display-row">
+                ${scoreDisplayHTML}
+                ${mainOddsButtonsHTML}
+            </div>
+            
+            <div class="b365-expand-toggle-footer-bar" onclick="toggleMatchExpansionCard('${m.matchId}')">
+                <span class="b365-dropdown-trigger-btn">
+                    ${isExpanded ? '<span style="color:#00ffaa;">Hide Markets</span>' : '<span style="color:#ffdf00;">More Markets</span>'}
+                </span>
+            </div>
+            
+            ${isExpanded && m.sport !== 'cricket' ? expandedMarketsHTML : ''}
+            ${marketsHTML}
+        </div>
+    `;
+});
+
+container.innerHTML = html;
+}
+
+function toggleMatchExpansionCard(matchId) {
+    if (!window.expandedMatchesMap) window.expandedMatchesMap = {};
+    expandedMatchesMap[matchId] = !expandedMatchesMap[matchId];
+    renderBet365LuxuryOddsTable(cachedGlobalMatches);
+}
+
+function openBet365SlipModal(event, matchId, matchTitle, marketName, selection, oddsValue) {
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    } else if (window.event) {
+        window.event.stopPropagation();
+    }
+
+    if (isBetPlacing) return;
+
+    activeSlipData = { matchId, matchTitle, marketName, selection, odds: parseFloat(oddsValue) };
+    
+    document.getElementById("slip-match-title").innerText = matchTitle;
+    document.getElementById("slip-market-name").innerText = marketName;
+    document.getElementById("slip-selection").innerText = selection;
+    document.getElementById("slip-odds").innerText = parseFloat(oddsValue).toFixed(2); 
+    document.getElementById("bet365-slip-overlay").style.display = "flex";
+}
+
+function closeBet365SlipModal(event) {
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    } else if (window.event) {
+        window.event.stopPropagation();
+    }
+    document.getElementById("bet365-slip-overlay").style.display = "none";
+    activeSlipData = null;
+}
+
+async function confirmBet365Placement() {
+    if (isBetPlacing || !activeSlipData) return;
+    const stakeInput = document.getElementById("slip-bet-amount");
+    const betAmt = parseFloat(stakeInput.value);
+
+    if (isNaN(betAmt) || betAmt < 10 || betAmt > 20000) {
+        alert("Invalid Stake Amount (10 - 20000)");
+        return;
+    }
+
+    isBetPlacing = true;
+    const submitBtn = document.getElementById("slip-submit-btn");
+    submitBtn.disabled = true;
+    submitBtn.innerText = "PLACING... ";
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/jili-bet`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: urlUserId, matchId: activeSlipData.matchId, marketName: activeSlipData.marketName,
+                selection: activeSlipData.selection, odds: activeSlipData.odds, amount: betAmt, wallet: urlWallet
+            })
+        });
+
+        const result = await response.json();
+        if (result.success === true) {
+            if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+            alert(result.message || "Bet accepted! Good Luck.");
+            closeBet365SlipModal();
+            if (typeof fetchSportsBetHistoryLog === 'function') fetchSportsBetHistoryLog(); 
+        } else {
+            alert(result.message || "Bet Declined!");
+        }
+    } catch (err) {
+        alert("Session out! Place bet again.");
+    } finally {
+        isBetPlacing = false;
+        submitBtn.disabled = false;
+        submitBtn.innerText = "PLACE BET";
+    }
+}
+
+function toggleSportsHistoryPanel(event, showPanel) {
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    } else if (window.event) {
+        window.event.stopPropagation();
+    }
+
+    const sidebar = document.getElementById("sports-history-sidebar");
+    if (sidebar) {
+        sidebar.style.display = showPanel ? "flex" : "none";
+        if (showPanel) fetchSportsBetHistoryLog();
+    }
+}
+
+async function fetchSportsBetHistoryLog() {
+    const historyListContainer = document.getElementById("sports-history-log-list");
+    if (!historyListContainer) return;
+    try {
+        const response = await fetch(`${SERVER_URL}/api/sportsbook/bet-history?userId=${urlUserId}`);
+        const data = await response.json();
+        if (data && data.success && data.history && data.history.length > 0) {
+            let logHTML = "";
+            data.history.reverse().forEach(log => {
+                let cashoutButtonHTML = "";
+                const stakeValue = parseFloat(log.stake || 0);
+                const oddsValue = parseFloat(log.odds || 0);
+                const payoutValue = parseFloat(log.potentialPayout || 0);
+
+                if (log.status === "RUNNING") {
+                    let currentCashoutOffer = stakeValue * 0.90; 
+                    cashoutButtonHTML = `<button class="live-cashout-action-btn" onclick="triggerLiveSportsCashout(event, '${log.ticketId}', ${currentCashoutOffer})" style="width:100%; background:#ffdf00; color:#000; border:none; padding:6px; font-weight:bold; cursor:pointer; margin-top:6px; border-radius:2px;">CASH OUT: ${currentCashoutOffer.toFixed(2)}</button>`;
+                }
+
+                logHTML += `
+                    <div class="history-log-card-item" style="background:#131c26; padding:10px; margin-bottom:6px; border-radius:4px; color:#fff; border-left:4px solid #00ffaa;">
+                        <div class="log-match-title" style="font-weight:bold; font-size:13px;">Match: ${log.matchTitle || 'Match'}</div>
+                        <div class="log-market-sub" style="font-size:11px; color:#ccc; margin:2px 0;">${log.marketName || 'Market'} | Pick: <b style="color:#ffdf00;">${log.selection || 'N/A'}</b></div>
+                        <div class="log-data-row-flex" style="display:flex; justify-content:space-between; font-size:12px;">
+                            <span>Odds: <b>${oddsValue.toFixed(2)}</b></span>
+                            <span>Stake: <b style="color:#00ff66;">${stakeValue.toFixed(2)}</b></span>
+                        </div>
+                        <div class="log-payout-row" style="display:flex; justify-content:space-between; font-size:12px; margin-top:2px;">
+                            <span>Payout: <b>${payoutValue.toFixed(2)}</b></span>
+                            <span class="log-status-badge" style="background:#223140; padding:1px 5px; border-radius:2px; font-size:10px;">${log.status}</span>
+                        </div>
+                        ${cashoutButtonHTML}
+                    </div>
+                `;
+            });
+            historyListContainer.innerHTML = logHTML;
+        } else {
+            historyListContainer.innerHTML = `<div style="text-align: center; padding: 40px; color: #888;">No history record found.</div>`;
+        }
+    } catch (e) { 
+        historyListContainer.innerHTML = `<div style="text-align: center; padding: 20px; color: #ff003c;">History load error!</div>`; 
+    }
+}
+
+async function triggerLiveSportsCashout(e, ticketId, cashoutAmt) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!confirm(`Do you want to cashout this ticket at ${cashoutAmt.toFixed(2)}?`)) return;
+    try {
+        const response = await fetch(`${SERVER_URL}/api/sportsbook/cashout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: urlUserId, betTicketId: ticketId, cashoutAmount: cashoutAmt, wallet: urlWallet })
+        });
+        const result = await response.json();
+        alert(result.message);
+        if (result.success) {
+            fetchLiveBalance();
+            fetchSportsBetHistoryLog();
+        }
+    } catch (err) { alert("Cashout network error."); }
+}
+
+socket.on("balanceUpdate", (data) => {
+    if (data && data.username === urlUserId) {
+        if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+        fetchLiveBalance();
+    }
+});
+
+window.onload = () => {
+    if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+    fetchLiveBalance();
+    setTimeout(fetchLiveBalance, 400);
+    
+    if (cachedGlobalMatches && cachedGlobalMatches.length > 0) {
+        renderBet365LuxuryOddsTable(cachedGlobalMatches);
+    }
+};
+</script>
+</body>
+</html>
