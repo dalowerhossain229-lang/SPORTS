@@ -1,0 +1,399 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: #070b11;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #fff;
+    overflow-x: hidden;
+}
+
+.bet365-stadium {
+    max-width: 480px;
+    margin: 0 auto;
+    background: #0d131a;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 60px;
+}
+
+/* Horizontal Category Navigation Bar */
+.bet365-sports-nav-scroll {
+    display: flex;
+    overflow-x: auto;
+    background: #121b24;
+    padding: 8px;
+    gap: 6px;
+    border-bottom: 1px solid #1a2531;
+}
+
+.bet365-sports-nav-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.sports-nav-tab {
+    flex: 0 0 auto;
+    background: #1a2531;
+    border: 1px solid #253547;
+    color: #8fa39b;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sports-nav-tab.active {
+    background: #00ffaa;
+    color: #0d131a;
+    border-color: #00ffaa;
+}
+
+/* Live Sports Submenu Panel */
+.cricket-formats-sub-nav {
+    display: flex;
+    background: #0d131a;
+    padding: 8px;
+    gap: 4px;
+    border-bottom: 1px solid #16202c;
+}
+
+.cricket-format-btn {
+    flex: 1;
+    background: #16202c;
+    border: none;
+    color: #8fa39b;
+    padding: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 3px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.cricket-format-btn.active {
+    background: #00ffaa;
+    color: #0d131a;
+}
+
+/* Premium Match Card Grid System */
+.b365-premium-match-card {
+    background: #0f1620;
+    border-bottom: 2px solid #1a2531;
+    margin-bottom: 6px;
+    padding: 10px 12px 6px 12px;
+}
+
+.b365-meta-top-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #8fa39b;
+    margin-bottom: 6px;
+}
+
+.b365-core-display-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.bet365-teams-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.b365-team-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 5px;
+}
+
+.b365-live-score-num {
+    color: #ffdf00;
+    font-size: 14px;
+}
+
+/* Tennis Score Matrix Layout */
+.bet365-sets-games-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-right: 4px;
+}
+
+.b365-mini-set-box, .b365-mini-game-box {
+    display: inline-block;
+    background: #17222b;
+    color: #8fa39b;
+    font-size: 11px;
+    padding: 1px 4px;
+    text-align: center;
+    min-width: 14px;
+    border-radius: 1px;
+}
+
+.b365-tennis-live-pts {
+    background: #00ffaa;
+    color: #000;
+    font-size: 10px;
+    padding: 0 4px;
+    border-radius: 2px;
+    font-weight: 900;
+}
+
+/* Premium Actions Odds Button Layout */
+.bet365-odds-actions-grid {
+    display: flex;
+    gap: 4px;
+}
+
+.bet365-odds-actions-grid.triplet { 
+    width: 140px; 
+}
+
+.bet365-odds-actions-grid.doublet { 
+    width: 92px; 
+}
+
+.b365-action-odds-btn {
+    flex: 1;
+    background: #1a2531;
+    border: none;
+    color: #ffdf00;
+    padding: 6px 0;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.b365-action-odds-btn span {
+    color: #8fa39b;
+    font-size: 10px;
+    font-weight: normal;
+    margin-bottom: 1px;
+}
+
+.b365-action-odds-btn.long {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+}
+
+/* Markets Expansion Toggle and Footer Panel */
+.b365-expand-toggle-footer-bar {
+    margin-top: 6px;
+    padding-top: 4px;
+    border-top: 1px dashed #1a2531;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.b365-expanded-inner-panel {
+    background: #141c26;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+}
+
+.b365-market-sub-title {
+    color: #fff;
+    font-size: 11px;
+    padding-bottom: 4px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+/* Golden Betslip Confirmation Modal Popup */
+.bet365-popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.bet365-popup-box {
+    background: #121b24;
+    border: 1px solid #00ffaa;
+    border-radius: 6px;
+    padding: 16px;
+    width: 90%;
+    max-width: 360px;
+    box-shadow: 0 4px 20px rgba(0, 255, 170, 0.2);
+}
+
+.bet365-popup-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+.slip-market-badge {
+    background: #1a2531;
+    color: #8fa39b;
+    font-size: 11px;
+    padding: 4px;
+    border-radius: 3px;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.slip-details-row {
+    font-size: 13px;
+    color: #ccc;
+    text-align: center;
+    margin-bottom: 14px;
+}
+
+.slip-input-container input {
+    width: 100%;
+    background: #0d131a;
+    border: 1px solid #253547;
+    color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 14px;
+    outline: none;
+}
+
+.slip-input-container input:focus {
+    border-color: #00ffaa;
+}
+
+.slip-btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.slip-cancel-btn {
+    flex: 1;
+    background: #253547;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.slip-confirm-btn {
+    flex: 2;
+    background: #00ffaa;
+    color: #0d131a;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.slip-confirm-btn:disabled {
+    background: #1a2531;
+    color: #8fa39b;
+    cursor: not-allowed;
+}
+
+/* Sliding Sports Bet History Sidebar Panel */
+.sports-history-panel-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    justify-content: flex-end;
+}
+
+.sports-history-content-box {
+    background: #0d131a;
+    width: 85%;
+    max-width: 380px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.history-panel-header {
+    background: #121b24;
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #1a2531;
+}
+
+.history-panel-header h3 {
+    font-size: 14px;
+    color: #00ffaa;
+    font-weight: bold;
+}
+
+.history-close-x-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.history-log-scroll-area {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+/* Fixed Footer Betslip Navigation Bar Component */
+.bet365-footer-betslip-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: #121b24;
+    border-top: 2px solid #00ffaa;
+    padding: 12px;
+    cursor: pointer;
+    z-index: 900;
+}
+
+.betslip-btn-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    color: #00ffaa;
+    font-weight: bold;
+    font-size: 13px;
+    text-transform: uppercase;
+}
